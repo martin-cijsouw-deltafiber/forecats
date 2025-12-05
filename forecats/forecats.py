@@ -1,10 +1,12 @@
 """Generate cat pictures based on weather forecasts using Gemini."""
 
+import base64
 import io
 import logging
 import os
 import random
 import textwrap
+from io import BytesIO
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -19,6 +21,10 @@ def generate_cat_pic(data: dict) -> Image.Image:
     """Generate, crop, and dither a cat picture based on the current weather using gemini.
 
     Data dictionary keys:
+
+    Returns:
+        str: Base64-encoded PNG image of the generated cat picture.
+
     """
     logger = logging.getLogger(Path(__file__).stem)
 
@@ -42,10 +48,12 @@ def generate_cat_pic(data: dict) -> Image.Image:
     prompt_history = prompt_history[-20:]
     save_prompt_history(prompt_history_filepath, prompt_history)
 
-    # # Generate image
-    # image = generate_image(client, data, activity, images, art_style)
+    # Generate image
+    print("Generating image for", activity)
+    image = generate_image(client, data, activity, images, art_style)
+    image.save("./logs/image.png")
 
-    return activity
+    return image
 
 
 def load_prompt_history(filepath: Path) -> list[str]:
