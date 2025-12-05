@@ -1,0 +1,26 @@
+- trigger:
+    - platform: time_pattern
+      hours: "/1"
+    - platform: homeassistant
+      event: start
+  action: 
+    - action: weather.get_forecasts
+      target:
+        entity_id: weather.home
+      data:
+        type: daily
+      response_variable: daily_forecast
+  sensor:
+    - name: "Daily Weather Summary"
+      unique_id: daily_weather_summary
+      state: >
+        {% set entity = 'weather.forecast_home' %}
+        {% set forecast = daily_forecast[entity]['forecast'][0] %}
+          
+        {% set condition = cond_map.get(forecast.condition, forecast.condition) %}
+        {% set temp_high = forecast.temperature | round(0) %}
+        {% set temp_low = forecast.templow | round(0) %}
+        {% set precip = forecast.precipitation_probability | round(0) %}
+          
+        Today's forecast is {{ condition }} with a high of {{ temp_high }} degrees and a low of {{ temp_low }} degrees. 
+        There is a {{ precip }}% chance of precipitation.
