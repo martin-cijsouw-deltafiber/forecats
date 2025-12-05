@@ -1,0 +1,87 @@
+"""FastAPI for serving cat pictures."""
+
+import base64
+import logging
+from pathlib import Path
+
+from fastapi import FastAPI, HTTPException, status
+from pydantic import BaseModel
+
+from forecats.forecats import generate_cat_pic
+
+LOG_FILE = Path("./logs/forecats_app.log")
+LOG_FILE.parent.mkdir(parents=True, exist_ok=True)
+logging.basicConfig(
+    filename=LOG_FILE,
+    level=logging.WARNING,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+)
+logging.getLogger("forecats").setLevel(logging.DEBUG)
+logger = logging.getLogger("forecats")
+
+
+class GenerateRequest(BaseModel):
+    """Request model for generating cat pictures."""
+
+    location: str
+    forecast: dict
+    cat_names: list[str]
+    cat_descriptions: list[str]
+    input_image_urls: list[str]
+    art_styles: list[str]
+
+    image_gen_aspect_ratio: str
+    image_gen_resolution: str
+    final_aspect_ratio: str
+    final_resolution: str
+
+
+app = FastAPI(
+    title="ForeCats API",
+    description="Generate weather forecast cat pictures",
+    version="1.0.0",
+)
+
+
+@app.get("/logs")
+def get_logs() -> dict:
+    """Return recent log files."""
+    if not LOG_FILE.exists():
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Log file not found")
+
+    with LOG_FILE.open("r") as f:
+        log_content = f.read()
+
+    return {"logs": log_content}
+
+
+@app.get("/")
+def read_root() -> dict:
+    """Root endpoint with API information."""
+    return {
+        "name": "ForeCats API",
+        "version": "1.0.0",
+        "endpoints": {
+            "POST /generate": "Generate and return a cat picture",
+            "GET /logs": "Get log file",
+        },
+    }
+
+
+@app.post("/generate")
+def generate(request: GenerateRequest) -> dict:
+    """Generate and return a cat picture based on the weather forecast."""
+    data = request.model_dump()
+    try:
+        activity = generate_cat_pic(data)
+        activity.encode("utf-8")
+        print(activity)
+        image_b64 = base64.b64encode(activity.encode("utf-8"))
+    except Exception as e:
+        logger.exception(f"Error generating cat picture: {e!s}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to generate cat picture: {e!s}",
+        ) from e
+
+    return {"image": image_b64}

@@ -1,14 +1,26 @@
 [project]
-name = "catpics"
+name = "forecats"
 version = "0.1.0"
-description = "Add your description here"
+description = "An simple API to generate cartoon drawings of your cats based on the weather forecast."
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "fastapi>=0.123.9",
     "google-genai>=1.53.0",
     "pillow>=12.0.0",
     "python-dotenv>=1.2.1",
+    "uvicorn[standard]>=0.38.0",
 ]
 
 [tool.ruff]
 exclude = ["venv/", ".venv/"]
+select = ["ALL"]
+line-length = 100
+ignore = [
+    "E501",     # line too long
+    "G004",     # use of f-string during logging
+    "S311",     # use of insecure random generator
+    "RET504",   # unnecessary assignment to var before a return
+    "D101",     # missing docstring in public class
+]
+

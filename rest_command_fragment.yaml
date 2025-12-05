@@ -1,0 +1,17 @@
+generate_cat_picture:
+  url: "http://192.168.2.21:8000/generate" 
+  method: POST
+  content_type: "application/json"
+  payload: >
+      {
+        "location": {{ location | tojson }},
+        "forecast": {{ forecast | tojson }},
+        "cat_names": {{ cat_names | tojson }},
+        "cat_descriptions": {{ cat_descriptions | tojson }},
+        "input_image_urls": {{ input_image_urls | tojson }},
+        "art_styles": {{ art_styles | tojson }},
+        "image_gen_aspect_ratio": {{ image_gen_aspect_ratio | tojson }},
+        "image_gen_resolution": {{ image_gen_resolution | tojson }},
+        "final_aspect_ratio": {{ final_aspect_ratio | tojson }},
+        "final_resolution": {{ final_resolution | tojson }}
+      }
