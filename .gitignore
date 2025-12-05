@@ -15,3 +15,7 @@ wheels/
 # Content dirs
 inputs/
 outputs/
+
+# Logs
+local_dev.log
+forecats_prompt_history.txt

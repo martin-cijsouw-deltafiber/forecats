@@ -5,18 +5,26 @@ from google.genai import types
 from PIL import Image
 import textwrap
 
-# Import dev data loader only when running locally (not in production/Home Assistant)
-try:
+# Import dev data loader only when running locally
+PROMPT_HISTORY_FILEPATH = "./forecats_prompt_history.txt"
+IS_LOCAL_DEV = not ("data" in globals() and "logger" in globals())
+
+if IS_LOCAL_DEV:
     from dotenv import load_dotenv
     from dev_data_loader import load_config
+    import logging
 
     load_dotenv()
-    IS_LOCAL_DEV = True
-except ImportError:
-    # Running in production (Home Assistant)
-    IS_LOCAL_DEV = False
 
-PROMPT_HISTORY_FILEPATH = "./inputs/prompt_history.txt"
+    logging.basicConfig(
+        level=logging.DEBUG,
+        filename="local_dev.log",
+        filemode="w",  # 'w' overwrites the file each run, 'a' appends
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    )
+    logger = logging.getLogger(Path(__file__).stem)
+
+    data = load_config()
 
 
 def load_prompt_history(filepath):
@@ -81,6 +89,8 @@ def generate_activity(client, data, prompt_history) -> str:
         - There should only be one activity described
         - Respond in a single line, no more than 50 words
         - Do not use newlines
+        - Start with "The {len(data.cat_names)} cats"
+        - Do not describe the appearance of the cats, with the exception of clothing or accessories needed for the activity
         """
     )
 
@@ -151,14 +161,21 @@ def generate_image(client, data, activity, input_images, art_style):
     return None
 
 
-def main(data=None):
-    # Load config for local development, otherwise expect data from Home Assistant
-    if data is None:
-        if IS_LOCAL_DEV:
-            data = load_config()
-        else:
-            raise ValueError("Data must be provided when running in production mode")
+def generate_logs(art_style, activity, data, logger):
+    logger.debug(f"Selected Art Style: {art_style}")
+    logger.debug(f"Generated Activity: {activity}")
+    logger.debug(f"API Key: {'SET' if data.api_key else 'NOT SET'}")
+    logger.debug(f"Input Image Paths: {data.input_image_paths}")
+    logger.debug(f"Output Image Dir: {data.output_image_dir}")
+    logger.debug(f"Location: {data.location}")
+    logger.debug(f"Forecast: {data.forecast}")
+    logger.debug(f"Image Gen Aspect Ratio: {data.image_gen_aspect_ratio}")
+    logger.debug(f"Image Gen Resolution: {data.image_gen_resolution}")
+    logger.debug(f"Final Aspect Ratio: {data.final_aspect_ratio}")
+    logger.debug(f"Final Resolution: {data.final_resolution}")
 
+
+def generate_cat_pic(data, logger):
     # setup
     output_dir = Path(data.output_image_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -167,28 +184,28 @@ def main(data=None):
     prompt_history = load_prompt_history(PROMPT_HISTORY_FILEPATH)
     images = load_images(data.input_image_paths)
     art_style = random.choice(data.art_styles)
-    print(f"Selected art style: {art_style}")  # TODO takeout
 
     # Generate activity description
     # TODO add an if-else to allow for date/activity overrides on particular days
     client = genai.Client(api_key=data.api_key)
     activity = generate_activity(client, data, prompt_history)
-    print(activity)  # TODO takeout
 
     # Update prompt history
     prompt_history.append(activity)
     prompt_history = prompt_history[-20:]
     save_prompt_history(PROMPT_HISTORY_FILEPATH, prompt_history)
 
+    # log
+    generate_logs(art_style, activity, data, logger)
+
     # Generate image
-    image = generate_image(client, data, activity, images, art_style)
-    output_path = output_dir / f"cat_weather_{data.forecast['datetime'][:10]}.png"
-    if image:
-        image.save(str(output_path))
-        print(f"Saved image to {output_path}")
-    else:
-        print("Failed to generate image.")
+    # image = generate_image(client, data, activity, images, art_style)
+    # output_path = output_dir / f"cat_weather_{data.forecast['datetime'][:10]}.png"
+    # if image:
+    #     image.save(str(output_path))
+    #     print(f"Saved image to {output_path}")
+    # else:
+    #     print("Failed to generate image.")
 
 
-if __name__ == "__main__":
-    main()
+generate_cat_pic(data=data, logger=logger)
