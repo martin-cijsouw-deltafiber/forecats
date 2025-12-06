@@ -1,7 +1,7 @@
 """FastAPI for serving cat pictures."""
 
-import base64
 import logging
+import os
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, status
@@ -9,15 +9,9 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from forecats.forecats import generate_cat_pic
+from forecats.logging import LOG_FILE, setup_logging
 
-LOG_FILE = Path("./logs/forecats_app.log")
-LOG_FILE.parent.mkdir(parents=True, exist_ok=True)
-logging.basicConfig(
-    filename=LOG_FILE,
-    level=logging.WARNING,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-)
-logging.getLogger("forecats").setLevel(logging.DEBUG)
+setup_logging()
 logger = logging.getLogger("forecats")
 
 
@@ -81,7 +75,8 @@ def generate(request: GenerateRequest) -> dict:
         filepath.parent.mkdir(parents=True, exist_ok=True)
         image.save(filepath)
 
-        url = f"http://192.168.2.21:8000/static/images/{filepath.name}"  # TODO change url
+        base_url = os.getenv("BASE_URL", "http://localhost:8000")
+        url = f"{base_url}/static/images/{filepath.name}"
 
     except Exception as e:
         logger.exception(f"Error generating cat picture: {e!s}")

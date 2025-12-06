@@ -1,12 +1,10 @@
 """Generate cat pictures based on weather forecasts using Gemini."""
 
-import base64
 import io
 import logging
 import os
 import random
 import textwrap
-from io import BytesIO
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -177,6 +175,7 @@ def generate_image(
 
         Rules:
         - Only generate a single image.
+        - The weather is important, so include elements that clearly indicate the weather conditions
         - Use the input images as references for the cats' appearances.
         - Style the cats to fit the activity and weather conditions.
         - The final image will be cropped in postprocessing to aspect ratio {data.get("final_aspect_ratio", "")} and resolution {data.get("final_resolution", "")}, so compose the image accordingly and DON'T place anything near the edges.

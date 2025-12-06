@@ -16,9 +16,10 @@ wheels/
 # Virtual environments
 .venv
 
-# Content dirs
+# Content
 inputs/
 outputs/
+*.png
 
 # Logs
 *.log
