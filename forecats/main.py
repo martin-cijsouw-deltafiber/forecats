@@ -2,34 +2,16 @@
 
 import logging
 import os
-from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, status
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel
 
 from forecats.forecats import generate_cat_pic
 from forecats.logging import LOG_FILE, setup_logging
+from forecats.models import GenerateRequest
 
 setup_logging()
 logger = logging.getLogger("forecats")
-
-
-class GenerateRequest(BaseModel):
-    """Request model for generating cat pictures."""
-
-    location: str
-    forecast: dict
-    cat_names: list[str]
-    cat_descriptions: list[str]
-    input_image_urls: list[str]
-    art_styles: list[str]
-
-    image_gen_aspect_ratio: str
-    image_gen_resolution: str
-    final_aspect_ratio: str
-    final_resolution: str
-
 
 app = FastAPI(
     title="ForeCats API",
@@ -67,16 +49,11 @@ def read_root() -> dict:
 
 @app.post("/generate")
 def generate(request: GenerateRequest) -> dict:
-    """Generate and return a cat picture based on the weather forecast."""
-    data = request.model_dump()
+    """Generate cat pic in static and return download URL."""
     try:
-        image = generate_cat_pic(data)
-        filepath = Path("./static/images/forecats.png")
-        filepath.parent.mkdir(parents=True, exist_ok=True)
-        image.save(filepath)
-
+        filename = generate_cat_pic(request)
         base_url = os.getenv("BASE_URL", "http://localhost:8000")
-        url = f"{base_url}/static/images/{filepath.name}"
+        url = f"{base_url}/static/images/{filename}"
 
     except Exception as e:
         logger.exception(f"Error generating cat picture: {e!s}")
@@ -85,4 +62,5 @@ def generate(request: GenerateRequest) -> dict:
             detail=f"Failed to generate cat picture: {e!s}",
         ) from e
 
+    print(url)  # TODO remove
     return {"download_url": url}

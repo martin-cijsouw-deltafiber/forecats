@@ -22,7 +22,7 @@ outputs/
 *.png
 
 # Logs
-*.log
+*.log*
 forecats_prompt_history.txt
 
 
