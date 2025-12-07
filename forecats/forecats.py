@@ -12,16 +12,20 @@ from google import genai
 from google.genai import types
 from PIL import Image
 
+from forecats.image_processing import recolor_image, resize_image
+from forecats.models import GenerateRequest
+
 load_dotenv()
 
 
-def generate_cat_pic(data: dict) -> Image.Image:
+def generate_cat_pic(data: GenerateRequest) -> tuple[Image.Image, Image.Image]:
     """Generate, crop, and dither a cat picture based on the current weather using gemini.
 
-    Data dictionary keys:
+    Args:
+        data: Pydantic model containing all generation parameters
 
     Returns:
-        str: Base64-encoded PNG image of the generated cat picture.
+        tuple[str, str]: Filenames of the saved PNG images of the generated cat pictures (original and recolored).
 
     """
     logger = logging.getLogger(Path(__file__).stem)
@@ -29,17 +33,17 @@ def generate_cat_pic(data: dict) -> Image.Image:
     # load resources
     prompt_history_filepath = Path("./data/forecats_prompt_history.txt")
     prompt_history = load_prompt_history(prompt_history_filepath)
-    images = load_images(data.get("input_image_paths", []))
-    art_style = random.choice(data.get("art_styles", []))
+    images = load_images([Path(url) for url in data.input_image_urls])
+    art_style = random.choice(data.art_styles)
 
-    logger.debug(f"Selected art style: {art_style}")
+    logger.info(f"Selected art style: {art_style}")
 
     # Generate activity description
     # TODO add an if-else to allow for date/activity overrides on particular days
     client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
     activity = generate_activity(client, data, prompt_history)
 
-    logger.debug(f"Generated activity: {activity}")
+    logger.info(f"Generated activity: {activity}")
 
     # Update prompt history
     prompt_history.append(activity)
@@ -47,11 +51,23 @@ def generate_cat_pic(data: dict) -> Image.Image:
     save_prompt_history(prompt_history_filepath, prompt_history)
 
     # Generate image
-    print("Generating image for", activity)
+    print("Generating image for", activity)  # TODO remove
     image = generate_image(client, data, activity, images, art_style)
-    image.save("./logs/image.png")
 
-    return image
+    # Post-process image
+    resized_image = resize_image(image.copy(), data.final_image_size)
+    optimized_image = recolor_image(resized_image, data.display_profile)
+
+    # Save image to static
+    static_dir = Path("./static/images/.png")
+    static_dir.mkdir(parents=True, exist_ok=True)
+
+    original_filepath = static_dir / "forecats_original.png"
+    optimized_filepath = static_dir / "forecats_optimized.png"
+    image.save(original_filepath)
+    optimized_image.save(optimized_filepath)
+
+    return original_filepath.name, optimized_filepath.name
 
 
 def load_prompt_history(filepath: Path) -> list[str]:
@@ -80,18 +96,22 @@ def load_images(paths: list[Path], max_size: int = 1024) -> dict[str, Image.Imag
     return {p.name: resize(p) for p in valid_paths}
 
 
-def generate_activity(client: genai.Client, data: dict, prompt_history: list[str]) -> str:
+def generate_activity(
+    client: genai.Client,
+    data: GenerateRequest,
+    prompt_history: list[str],
+) -> str:
     """Describe an activity for the cats based on the weather forecast and date."""
     activity_prompt = textwrap.dedent(
         f"""
-        You are a prompt generator for static AI cartoon art generation model. Your task is to generate an activity for {len(data.get("cat_names", []))} cats to do based on the date and weather conditions provided, which will be used to draw a single picture.
+        You are a prompt generator for static AI cartoon art generation model. Your task is to generate an activity for {len(data.cat_names)} cats to do based on the date and weather conditions provided, which will be used to draw a single picture.
 
-        The date is {data.get("forecast", {}).get("datetime", "")}.
+        The date is {data.forecast.get("datetime", "")}.
 
-        The weather forecast is for {data.get("location", "")}.
+        The weather forecast is for {data.location}.
 
         The forecast is:
-        {data.get("forecast", {})}
+        {data.forecast}
 
         The last 20 activities you generated were:
         {prompt_history}
@@ -100,23 +120,21 @@ def generate_activity(client: genai.Client, data: dict, prompt_history: list[str
 
         Follow this prompt:
 
-        Generate a fun activity for {len(data.get("cat_names", []))} cats to do together that fits the weather conditions and time of year.
+        Generate a fun activity for {len(data.cat_names)} cats to do together that fits the weather conditions and time of year.
 
         Heuristics:
         - You can anthropomorphize the cats to do human-like activities, or you can make them do more cat-like activities occasionally.
         - The activity can be either indoors or outdoors, but should be appropriate for the weather conditions and time of year.
         - Activities should be 30% set in Toronto, and 20% set in other specific locations with similar weather, and 50% set in generic locations.
-        - Be creative and imaginative.
         - The mix of indoor/outdoor should be seasonally appropriate. Summer is more outdoor, winter is more indoor.
         - It can be a mundane activity (waiting for the bus, commuting, shopping, reading, etc.) or it can be exciting (playing in the snow, sports, going to a festival, playing tag, games, etc.).
         - Try to keep it different from the last 20 activities you generated (e.g., if there are lots that are outdoors, maybe make an indoor one. Lots of mundane ones? make an exciting one!).
 
         Rules:
         - Do not take weather into account when making indoor/outdoor decision, only take season and past prompts.
-        - You don't have to describe the weather, as this will also be in the final prompt for the art generation model.
-        - The activity should be able to involve all {len(data.get("cat_names", []))} cats
+        - You don't have to describe the weather
+        - The activity should be able to involve all {len(data.cat_names)} cats
         - The activity must not be similar to any of the last 20 activities you generated.
-        - There should only be one activity described
         - Respond in a single line, no more than 50 words
         - Do not use newlines
         - Do not describe the appearance of the cats, with the exception of clothing or accessories needed for the activity
@@ -138,7 +156,7 @@ def generate_activity(client: genai.Client, data: dict, prompt_history: list[str
 
 def generate_image(
     client: genai.Client,
-    data: dict,
+    data: GenerateRequest,
     activity: str,
     input_images: dict[str, Image.Image],
     art_style: str,
@@ -148,14 +166,14 @@ def generate_image(
         f"""
         You are an AI artist creating daily weather illustrations featuring cats based on a weather forecast and an activity that will be given to you. Your task is to generate a vibrant and engaging illustration that captures the essence of the weather conditions and the cats' activity in a specific art style.
 
-        The weather forecast is for {data.get("location", "")} on {data.get("forecast", {}).get("datetime", "")}:
-        {data.get("forecast", {})}
+        The weather forecast is for {data.location} on {data.forecast.get("datetime", "")}:
+        {data.forecast}
 
-        You have {len(data.get("cat_names", []))} cats to illustrate:
-        {", ".join(data.get("cat_names", []))}.
+        You have {len(data.cat_names)} cats to illustrate:
+        {", ".join(data.cat_names)}.
 
         Here are their descriptions:
-        {"\n- ".join(data.get("cat_descriptions", []))}
+        {"\n- ".join(data.cat_descriptions)}
 
         The activity they are doing today is:
         {activity}
@@ -178,7 +196,7 @@ def generate_image(
         - The weather is important, so include elements that clearly indicate the weather conditions
         - Use the input images as references for the cats' appearances.
         - Style the cats to fit the activity and weather conditions.
-        - The final image will be cropped in postprocessing to aspect ratio {data.get("final_aspect_ratio", "")} and resolution {data.get("final_resolution", "")}, so compose the image accordingly and DON'T place anything near the edges.
+        - The final image will be cropped in postprocessing to {data.final_image_size}, so compose the image accordingly and DON'T place anything near the edges.
         """,
     )
 
@@ -188,8 +206,8 @@ def generate_image(
         config=types.GenerateContentConfig(
             response_modalities=["IMAGE"],
             image_config=types.ImageConfig(
-                aspect_ratio=data.get("image_gen_aspect_ratio"),
-                image_size=data.get("image_gen_resolution"),
+                aspect_ratio=data.image_gen_aspect_ratio,
+                image_size=data.image_gen_resolution,
             ),
         ),
     )
@@ -197,13 +215,12 @@ def generate_image(
     if not response.parts:
         msg = "Gemini returned no image."
         raise RuntimeError(msg)
+
     for part in response.parts:
-        if img := part.as_image():
-            # Convert genai.types.Image to PIL Image using image_bytes
-            if img.image_bytes:
-                return Image.open(io.BytesIO(img.image_bytes))
-            msg = "Image has no bytes data."
-            raise RuntimeError(msg)
+        img = part.as_image()
+        if img and img.image_bytes:
+            img_pil = Image.open(io.BytesIO(img.image_bytes))
+            return img_pil.copy()
 
     msg = "No image part in response."
     raise RuntimeError(msg)

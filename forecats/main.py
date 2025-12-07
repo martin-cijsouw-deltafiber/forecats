@@ -51,10 +51,11 @@ def read_root() -> dict:
 def generate(request: GenerateRequest) -> dict:
     """Generate cat pic in static and return download URL."""
     try:
-        filename = generate_cat_pic(request)
-        base_url = os.getenv("BASE_URL", "http://localhost:8000")
-        url = f"{base_url}/static/images/{filename}"
+        original_filename, optimized_filename = generate_cat_pic(request)
 
+        base_url = os.getenv("BASE_URL", "http://localhost:8000")
+        original_url = f"{base_url}/static/images/{original_filename}"
+        optimized_url = f"{base_url}/static/images/{optimized_filename}"
     except Exception as e:
         logger.exception(f"Error generating cat picture: {e!s}")
         raise HTTPException(
@@ -62,5 +63,5 @@ def generate(request: GenerateRequest) -> dict:
             detail=f"Failed to generate cat picture: {e!s}",
         ) from e
 
-    print(url)  # TODO remove
-    return {"download_url": url}
+    print(original_url, optimized_url)  # TODO remove
+    return {"original_url": original_url, "optimized_url": optimized_url}
