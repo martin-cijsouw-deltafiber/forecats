@@ -48,8 +48,6 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
         except Exception:
             _LOGGER.exception("Failed to generate cat picture")
 
-    hass.services.async_register(
-        DOMAIN, "generate_cat_picture", handle_generate, SERVICE_SCHEMA
-    )
+    hass.services.async_register(DOMAIN, "generate_cat_picture", handle_generate, SERVICE_SCHEMA)
 
     return True

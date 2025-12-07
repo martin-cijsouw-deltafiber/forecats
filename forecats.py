@@ -2,7 +2,6 @@
 
 import io
 import logging
-import os
 import random
 import textwrap
 from pathlib import Path
@@ -11,8 +10,12 @@ from google import genai
 from google.genai import types
 from PIL import Image
 
-from .image_processing import recolor_image, resize_image
-from .models import GenerateRequest
+try:
+    from .image_processing import recolor_image, resize_image
+    from .models import GenerateRequest
+except ImportError: # For local testing
+    from image_processing import recolor_image, resize_image
+    from models import GenerateRequest
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -22,6 +25,7 @@ def generate_cat_pic(data: GenerateRequest, config_dir: str) -> bool:
 
     Args:
         data: Pydantic model containing all generation parameters
+        config_dir: Home Assistant configuration directory for saving data
 
     Returns:
         tuple[str, str]: Filenames of the saved PNG images of the generated cat pictures (original and recolored).
@@ -130,21 +134,23 @@ def generate_activity(
 
         Heuristics:
         - You can anthropomorphize the cats to do human-like activities, or you can make them do more cat-like activities occasionally.
-        - The activity can be either indoors or outdoors, but should be appropriate for the weather conditions and time of year.
-        - Activities should be 30% set in Toronto, and 20% set in other specific locations with similar weather, and 50% set in generic locations.
-        - The mix of indoor/outdoor should be seasonally appropriate. Summer is more outdoor, winter is more indoor.
+        - The activity can be either indoors or outdoors
+        - Activities should be 30% set in locations in Toronto, and 20% set in other specific locations with similar weather, and 50% set in generic locations.
+        - The mix of indoor/outdoor should be seasonally appropriate. Summer is mostly outdoor, winter is 50/50 indoor/outdoor.
         - It can be a mundane activity (waiting for the bus, commuting, shopping, reading, etc.) or it can be exciting (playing in the snow, sports, going to a festival, playing tag, games, etc.).
-        - Try to keep it different from the last 20 activities you generated (e.g., if there are lots that are outdoors, maybe make an indoor one. Lots of mundane ones? make an exciting one!).
 
         Rules:
-        - Do not take weather into account when making indoor/outdoor decision, only take season and past prompts.
+        - You must come up with the following:
+            - Activity: A short (<5 words) description of the activity
+            - Foreground: A description of what the cats are doing, including any clothing or accessories they are wearing.
+            - Background: A description of the background elements (e.g. buildings, landmarks, trees, furniture, etc.)
         - You don't have to describe the weather
-        - The activity should be able to involve all {len(data.cat_names)} cats
+        - Do not describe the appearance of the cats, with the acception of clothing or accessories needed for the activity
+        - The activity should involve all {len(data.cat_names)} cats
         - The activity must not be similar to any of the last 20 activities you generated.
-        - Respond in a single line, no more than 50 words
+        - Respond in a single line, no more than 100 words
         - Do not use newlines
-        - Do not describe the appearance of the cats, with the exception of clothing or accessories needed for the activity
-        - Respond with "Activity: <activity>, description: <short description>"
+        - Respond with "Activity: <activity>, Foreground: <foreground>, Background: <background>"
         """,
     )
 
@@ -190,7 +196,11 @@ def generate_image(
         You will be given {len(input_images)} input images with these names (in this order):
         {", ".join(input_images.keys())}
 
+        ***********************************************
+
         Create a vibrant and engaging illustration in the recommended style that captures the essence of the weather conditions and the cats' activity. Use colors and elements that reflect the forecasted weather, making the scene lively and appropriate for the time of year.
+
+        Additionally, create a small box with a thermometer graphic, in the style of the image, showing the temperature on a range from -30 to 30, and a single word describing the weather conditions. Style the box and themometer to fit in with the rest of the image.
 
         Heuristics:
         - Try to capture the mood of the weather and activity in the illustration (e.g., bright and sunny, cozy indoors during snow, etc.).
@@ -199,10 +209,11 @@ def generate_image(
 
         Rules:
         - Only generate a single image.
+        - The final image will be cropped in postprocessing to {data.final_image_size}, so compose the image accordingly and DON'T place anything near the edges.
         - The weather is important, so include elements that clearly indicate the weather conditions
+        - Do not place the thermometer graphic too close to the edge, or overlapping any important details.
         - Use the input images as references for the cats' appearances.
         - Style the cats to fit the activity and weather conditions.
-        - The final image will be cropped in postprocessing to {data.final_image_size}, so compose the image accordingly and DON'T place anything near the edges.
         """,
     )
 
