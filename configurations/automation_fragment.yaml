@@ -1,0 +1,45 @@
+- id: '<YOUR ID>'
+  alias: generate forecats
+  description: ''
+  triggers:
+    - trigger: time
+      at: "05:00:00"
+  conditions: []
+  actions:
+    - action: weather.get_forecasts
+      metadata: {}
+      data:
+        type: daily
+      target:
+        entity_id: weather.forecast_home
+      response_variable: todays_forecast
+    - action: forecats.generate_cat_picture
+      data:
+        gemini_api_key: "<YOUR API KEY>"
+        location: "<YOUR LOCATION>"
+        forecast: "{{ todays_forecast }}"
+        cat_names:
+          - "<CAT 1>"
+          - "<CAT 2>"
+          - "..."
+        cat_descriptions:
+          - >
+            <CAT 1 DESCRIPTION>
+          - >
+            <CAT 2 DESCRIPTION>
+        input_image_paths:
+          - "/config/forecats_data/input_images/<CAT1>.jpg"
+          - "/config/forecats_data/input_images/<CAT1 and <CAT2>.jpg"
+          - "/config/forecats_data/input_images/<CAT2>.jpg"
+        art_styles:
+          - "comic book"
+          - "anime"
+          - "pixar"
+          - "watercolor"
+          - "ghibli"
+          - "disney"
+        image_gen_aspect_ratio: "16:9"
+        image_gen_resolution: "1K"
+        final_image_size: "800x480" # Or whatever you want, as long as its <= image_gen_resolution
+        display_profile: "spectra6" # Currently supports null (original image) or "spectra6"
+  mode: single
