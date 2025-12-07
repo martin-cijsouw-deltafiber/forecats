@@ -34,7 +34,7 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
         data = GenerateRequest(
             **call.data,
         )  # look I know I validate twice but I cant be effed to refactor
-
+        _LOGGER.info(f"Received generate_cat_picture service call with data: {data}")
         try:
             # Run in executor thread, pass HA config directory
             original_path, optimized_path = await hass.async_add_executor_job(
