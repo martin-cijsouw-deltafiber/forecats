@@ -1,0 +1,56 @@
+generate_cat_picture:
+  name: Generate Cat Picture
+  description: Generate a weather-themed cat picture
+  fields:
+    location:
+      description: Location for weather context
+      example: "Toronto, Ontario, Canada"
+      required: true
+      selector:
+        text:
+    forecast:
+      description: Weather forecast data
+      required: true
+    cat_names:
+      description: Names of your cats
+      required: true
+      selector:
+        object:
+    cat_descriptions:
+      description: Descriptions of your cats
+      required: true
+      selector:
+        object:
+    input_image_paths:
+      description: Paths to reference images
+      required: true
+      selector:
+        object:
+    art_styles:
+      description: List of art styles to choose from
+      required: true
+      selector:
+        object:
+    image_gen_aspect_ratio:
+      description: Aspect ratio for generated image
+      default: "16:9"
+      selector:
+        text:
+    image_gen_resolution:
+      description: Resolution for generated image
+      default: "1K"
+      selector:
+        text:
+    final_image_size:
+      description: Final output image size
+      default: "1K"
+      example: "800x480"
+      selector:
+        text:
+    display_profile:
+      description: Display profile (null or "spectra6")
+      required: true
+      default: null
+      example: "spectra6"
+      selector:
+        text:
