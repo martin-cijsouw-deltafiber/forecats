@@ -12,6 +12,7 @@ _LOGGER = logging.getLogger(__name__)
 
 SERVICE_SCHEMA = vol.Schema(
     {
+        vol.Required("gemini_api_key"): cv.string,
         vol.Required("location"): cv.string,
         vol.Required("forecast"): dict,
         vol.Required("cat_names"): [cv.string],

@@ -4,6 +4,8 @@ from pydantic import BaseModel
 class GenerateRequest(BaseModel):
     """Request model for generating cat pictures."""
 
+    gemini_api_key: str
+
     location: str
     forecast: dict
     cat_names: list[str]

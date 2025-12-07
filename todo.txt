@@ -1,7 +1,0 @@
-- [x] make immage gen async
-- [x] implement dithering
-- [x] clean up yaml in HA
-- [ ] add docker image to pi
-- [x] clean up prompts (Tolmies eyes, Tolmies tail, milo's pompom)
-- [x] serve two URLs
-- [ ] configure IPs

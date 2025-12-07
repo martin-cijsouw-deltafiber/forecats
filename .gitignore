@@ -1,6 +1,7 @@
 .llm/
 .archive/
 notes.txt
+todo.txt
 
 # Development files
 pyproject.toml

@@ -45,7 +45,7 @@ def generate_cat_pic(data: GenerateRequest, config_dir: str) -> bool:
 
     # Generate activity description
     # TODO add an if-else to allow for date/activity overrides on particular days
-    client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+    client = genai.Client(api_key=data.gemini_api_key)
     activity = generate_activity(client, data, prompt_history)
 
     _LOGGER.info(f"Generated activity: {activity}")

@@ -1,0 +1,89 @@
+- id: '<YOUR ID>'
+  alias: generate forecats
+  description: ''
+  triggers:
+    - trigger: time
+      at: "05:00:00"
+  conditions: []
+  actions:
+    - action: weather.get_forecasts
+      metadata: {}
+      data:
+        type: daily
+      target:
+        entity_id: weather.forecast_home
+      response_variable: todays_forecast
+    - action: forecats.generate_cat_picture
+      data:
+        gemini_api_key: "<YOUR API KEY>"
+        location: "Toronto, Ontario, Canada"
+        forecast: "{{ todays_forecast }}"
+        cat_names:
+          - "Milo"
+          - "Tolmie"
+        cat_descriptions:
+          - >
+            Milo is a domestic short-haired tabby. He is seven years old and we like to
+            imagine that he is serious but a little goofy on the outside. 
+            He has green eyes, with big pupils when he is excited. He loves cuddling,
+            sitting on his moms lap, his little brother Tolmie,
+            holding little pom-poms in his mouth, and stealing kibbles from his brother.
+            You can just *barely* see a little bit of his pink skin beneath his tummy fur,
+            but it is cute and fuzzy with some paunch. He has cute white paws and a white tummy.
+          - >
+            Tolmie is a ragdoll, he has pretty blue eyes, and his
+            black pupils get big when he's excited. We like to imagine that he is goofy.
+            He loves his big brother Milo, playing with strings, rolling on the ground belly-up,
+            and sprinting full speed around the house yelling. He is all fluff.
+            When he is happy he likes to stick his tail up.
+        input_image_paths:
+          - "/config/www/cat_pics/milo_and_tolmie.jpg"
+          - "/config/www/cat_pics/milo_and_tolmie2.jpg"
+          - "/config/www/cat_pics/milo.jpg"
+          - "/config/www/cat_pics/tolmie.jpg"
+          - "/config/www/cat_pics/tolmie2.jpg"
+        art_styles:
+          - "comic book"
+          - "anime"
+          - "pixar"
+          - "watercolor"
+          - "ghibli"
+          - "disney"
+          - "scavengers reign style"
+          - "Traditional 2D Animation Style"
+          - "Cel Animation Style"
+          - "Stop-Motion Animation Style"
+          - "Claymation Style"
+          - "Puppetoon Style"
+          - "Jean Giraud/Moebius Style"
+          - "Banksy Style"
+          - "Vintage Cartoon Style"
+          - "Cutout Animation Style"
+          - "3D/CGI Animation Style"
+          - "Pixar Style"
+          - "Stylized 3D Animation Style"
+          - "Motion Graphics Animation Style"
+          - "Rotoscoping Style"
+          - "Limited Animation Style"
+          - "Full Animation Style"
+          - "Anime Style"
+          - "Chibi Style"
+          - "Ghibli Style"
+          - "Rubber Hose Animation Style"
+          - "Fleischer Style"
+          - "Looney Tunes Style"
+          - "U.P.A. (United Productions of America) Style"
+          - "South Park Style"
+          - "The Simpsons Style"
+          - "Adult Swim Style"
+          - "Abstract Animation Style"
+          - "Pin Screen Animation Style"
+          - "Sand Animation Style"
+          - "Watercolor Animation Style"
+          - "Line Drawing Animation Style"
+          - "Splatterscreen/Hanna-Barbera Style"
+          - "Experimental Animation Style"
+        image_gen_aspect_ratio: "16:9"
+        image_gen_resolution: "1K"
+        final_image_size: "800x480"
+  mode: single
