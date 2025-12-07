@@ -8,7 +8,7 @@ class GenerateRequest(BaseModel):
     forecast: dict
     cat_names: list[str]
     cat_descriptions: list[str]
-    input_image_urls: list[str]
+    input_image_paths: list[str]
     art_styles: list[str]
 
     image_gen_aspect_ratio: str

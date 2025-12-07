@@ -7,18 +7,17 @@ import random
 import textwrap
 from pathlib import Path
 
-from dotenv import load_dotenv
 from google import genai
 from google.genai import types
 from PIL import Image
 
-from forecats.image_processing import recolor_image, resize_image
-from forecats.models import GenerateRequest
+from .image_processing import recolor_image, resize_image
+from .models import GenerateRequest
 
-load_dotenv()
+_LOGGER = logging.getLogger(__name__)
 
 
-def generate_cat_pic(data: GenerateRequest) -> tuple[Image.Image, Image.Image]:
+def generate_cat_pic(data: GenerateRequest, config_dir: str) -> bool:
     """Generate, crop, and dither a cat picture based on the current weather using gemini.
 
     Args:
@@ -28,22 +27,28 @@ def generate_cat_pic(data: GenerateRequest) -> tuple[Image.Image, Image.Image]:
         tuple[str, str]: Filenames of the saved PNG images of the generated cat pictures (original and recolored).
 
     """
-    logger = logging.getLogger(Path(__file__).stem)
+    # Setup paths relative to HA config directory
+    config_path = Path(config_dir)
+    data_dir = config_path / "forecats_data"
+    static_dir = config_path / "www" / "daily_forecats"
 
-    # load resources
-    prompt_history_filepath = Path("./data/forecats_prompt_history.txt")
+    data_dir.mkdir(parents=True, exist_ok=True)
+    static_dir.mkdir(parents=True, exist_ok=True)
+
+    prompt_history_filepath = data_dir / "forecats_prompt_history.txt"
+
+    # Load resources
     prompt_history = load_prompt_history(prompt_history_filepath)
-    images = load_images([Path(url) for url in data.input_image_urls])
+    images = load_images(data.input_image_paths)
     art_style = random.choice(data.art_styles)
-
-    logger.info(f"Selected art style: {art_style}")
+    _LOGGER.info(f"Selected art style: {art_style}")
 
     # Generate activity description
     # TODO add an if-else to allow for date/activity overrides on particular days
     client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
     activity = generate_activity(client, data, prompt_history)
 
-    logger.info(f"Generated activity: {activity}")
+    _LOGGER.info(f"Generated activity: {activity}")
 
     # Update prompt history
     prompt_history.append(activity)
@@ -51,31 +56,29 @@ def generate_cat_pic(data: GenerateRequest) -> tuple[Image.Image, Image.Image]:
     save_prompt_history(prompt_history_filepath, prompt_history)
 
     # Generate image
-    print("Generating image for", activity)  # TODO remove
+    _LOGGER.info(f"Generating image for: {activity}")
     image = generate_image(client, data, activity, images, art_style)
 
     # Post-process image
     resized_image = resize_image(image.copy(), data.final_image_size)
     optimized_image = recolor_image(resized_image, data.display_profile)
 
-    # Save image to static
-    static_dir = Path("./static/images/.png")
-    static_dir.mkdir(parents=True, exist_ok=True)
-
+    # Save images
     original_filepath = static_dir / "forecats_original.png"
     optimized_filepath = static_dir / "forecats_optimized.png"
     image.save(original_filepath)
     optimized_image.save(optimized_filepath)
 
-    return original_filepath.name, optimized_filepath.name
+    _LOGGER.info(f"Images saved to {static_dir}")
+
+    return True
 
 
 def load_prompt_history(filepath: Path) -> list[str]:
     """Load past prompts from file."""
-    path = Path(filepath)
-    if path.exists():
-        return path.read_text().splitlines()
-    path.parent.mkdir(parents=True, exist_ok=True)
+    if filepath.exists():
+        return filepath.read_text().splitlines()
+    filepath.parent.mkdir(parents=True, exist_ok=True)
     return []
 
 
@@ -84,7 +87,7 @@ def save_prompt_history(filepath: Path, history: list[str]) -> None:
     Path(filepath).write_text("\n".join(history))
 
 
-def load_images(paths: list[Path], max_size: int = 1024) -> dict[str, Image.Image]:
+def load_images(image_paths: list[str], max_size: int = 1024) -> dict[str, Image.Image]:
     """Load and resize images."""
 
     def resize(img_path: Path) -> Image.Image:
@@ -92,7 +95,10 @@ def load_images(paths: list[Path], max_size: int = 1024) -> dict[str, Image.Imag
         img.thumbnail((max_size, max_size), Image.Resampling.LANCZOS)
         return img
 
-    valid_paths = [Path(p) for p in paths if Path(p).exists()]
+    paths = [Path(p) for p in image_paths]
+    valid_paths = [p for p in paths if p.exists()]
+    if not valid_paths:
+        _LOGGER.warning(f"No valid image paths found from: {paths}")
     return {p.name: resize(p) for p in valid_paths}
 
 
