@@ -2,6 +2,7 @@
 .archive/
 notes.txt
 todo.txt
+esp/
 
 # Development files
 pyproject.toml
