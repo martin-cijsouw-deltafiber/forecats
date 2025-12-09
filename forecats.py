@@ -200,7 +200,10 @@ def generate_image(
 
         Create a vibrant and engaging illustration in the recommended style that captures the essence of the weather conditions and the cats' activity. Use colors and elements that reflect the forecasted weather, making the scene lively and appropriate for the time of year.
 
-        Additionally, create a small box with a thermometer graphic, in the style of the image, showing the temperature on a range from -30 to 30, and a single word describing the weather conditions. Style the box and themometer to fit in with the rest of the image.
+        Additionally, create a small box in the top left corner, in the style of the image. This box should contain:
+        - A < three word description of the weather conditions
+        - The daily high temperature (forecast field: temperature)
+        - The daily low temperature (forecast field: templow)
 
         Heuristics:
         - Try to capture the mood of the weather and activity in the illustration (e.g., bright and sunny, cozy indoors during snow, etc.).
@@ -211,7 +214,8 @@ def generate_image(
         - Only generate a single image.
         - The final image will be cropped in postprocessing to {data.final_image_size}, so compose the image accordingly and DON'T place anything near the edges.
         - The weather is important, so include elements that clearly indicate the weather conditions
-        - Do not place the thermometer graphic too close to the edge, or overlapping any important details.
+        - Do not place the temperature box too close to the edge, or overlapping any important details.
+        - Style the temperature box to fit the overall image and art style.
         - Use the input images as references for the cats' appearances.
         - Style the cats to fit the activity and weather conditions.
         """,
