@@ -200,7 +200,7 @@ def generate_image(
 
         Create a vibrant and engaging illustration in the recommended style that captures the essence of the weather conditions and the cats' activity. Use colors and elements that reflect the forecasted weather, making the scene lively and appropriate for the time of year.
 
-        Additionally, create a small box in the top left corner, in the style of the image. This box should contain:
+        Additionally, create a small box in the bottom left corner, in the style of the image. This box should contain:
         - A < three word description of the weather conditions
         - The daily high temperature (forecast field: temperature)
         - The daily low temperature (forecast field: templow)
