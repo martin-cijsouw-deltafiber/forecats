@@ -1,4 +1,4 @@
-- id: '<YOUR ID>'
+- id: "<YOUR AUTOMATION ID>"
   alias: generate forecats
   description: ''
   triggers:
@@ -21,23 +21,27 @@
         cat_names:
           - "<CAT 1>"
           - "<CAT 2>"
-          - "..."
+          - "<...>"
         cat_descriptions:
           - >
             <CAT 1 DESCRIPTION>
           - >
             <CAT 2 DESCRIPTION>
-        input_image_paths:
+          - >
+            <...>
+        input_image_paths: 
           - "/config/forecats_data/input_images/<CAT1>.jpg"
           - "/config/forecats_data/input_images/<CAT1 and <CAT2>.jpg"
           - "/config/forecats_data/input_images/<CAT2>.jpg"
-        art_styles:
+          - "<...>" # Up to 14 images total
+        art_styles: 
           - "comic book"
           - "anime"
           - "pixar"
           - "watercolor"
           - "ghibli"
           - "disney"
+          - "<...>" # As many animation styles as you want
         image_gen_aspect_ratio: "16:9"
         image_gen_resolution: "1K"
         final_image_size: "800x480" # Or whatever you want, as long as its <= image_gen_resolution

@@ -26,9 +26,12 @@ wheels/
 inputs/
 outputs/
 *.png
-
+*.jpg
 # Logs
 *.log*
+
+!assets/*.png
+!assets/*.jpg
 forecats_prompt_history.txt
 
 

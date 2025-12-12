@@ -1,0 +1,91 @@
+Forecats
+=========
+Wake up every morning (more) excited to look at the forecast! This is a custom Home Assistant integration which uses forecast data, pictures of your cats, and Google's Nano Banana API to generate and serve weather-themed drawings of your precious kitties every morning.
+
+![A picture of two cats and a snowy, cloudy forecast combine to make a drawing of two cats in scarves looking out a window](assets/diagram.png)
+
+**Features**
+- Home assistant integration to generate pictures
+- Customizable automation template to control drawing styles, generation times, etc.
+- Optional optimization for E-ink screens (currently limited to spectra6 panels)
+
+## Examples
+![Two cats with sunglasses on a beach on a summer day, a wooden sign says 30 degrees](assets/example4.png)
+
+![A cat stands in front of an e-ink screen display a drawing of him and another cat](assets/e-ink-screen.jpg)
+
+![A screenshot of the home assistant app showing a cartoon of two cats reading a book](assets/screenshot.png)
+
+## Getting Started
+> [!WARNING]
+> This will cost money. You get (I think) $300 of Gemini credits upon sign up, but eventually you will have to pay ~$0.14 every time this runs.
+
+### Requirements
+- A [home assistant server](https://www.home-assistant.io/installation/) with the following add-ons
+  - [File editor add-on](https://www.home-assistant.io/common-tasks/os/#installing-and-using-the-file-editor-add-on)
+  - [Terminal and ssh add-on](https://www.home-assistant.io/common-tasks/os/#installing-and-using-the-ssh-add-on)
+- A google AI studio [API key](https://aistudio.google.com/api-keys)
+- *(OPTIONAL)* E-ink screen controllable with ESPHOME. I used seeed studio's [e10002 spectra6 display](https://www.seeedstudio.com/reTerminal-E1002-p-6533.html)
+
+### Setup
+1. **Create the necessary directory structure** in your Home Assistant server:
+
+  ```bash
+  mkdir config/custom_components && mkdir -p config/forecats_data/input_images
+  ```
+
+2. **Select and upload cat images:**
+  - Choose good pictures of your cats.
+  - Rename the files so the cats' names are in the filenames.
+  - Upload them to `~/config/forecats_data/input_images`.
+
+3. **Download the repo:**
+
+  ```bash
+  cd ~/config/custom_components && git clone https://github.com/jwardbond/forecats.git
+  ```
+
+4. **Enable the custom integration** by adding `forecats:` to your configuration file:
+
+  ```yaml
+  # configuration.yaml
+
+  default_config:
+
+  # ...existing data
+
+  automation: !include automations.yaml
+
+  forecats:
+  ```
+
+5. **Set up the automation** using the [automation template](https://github.com/jwardbond/forecats/blob/3a6db63b4dc41ebb80d5a26b6beedf57305bd4ba/configurations/automation_fragment.yaml) (add to `config/automations.yaml`).
+  - Make sure to fill out (or remove) any `<>` in the template.
+
+6. **Restart your server.**
+
+**That's it!** Every morning at 5:00 am, the forecats integration will generate the following images in the `config/www/daily_forecats/` directory:
+- `forecats_original.png`: the unprocessed output image from Gemini
+- `forecats_optimized.png`: the output image cropped to your desired size and adjusted for display on your screen (currently only supports color adjustments for Spectra6 e-ink)
+
+
+These images should be accessible on your local network at (e.g.): `<YOUR HA URL>/local/daily_forecats/forecats_original.png`
+
+
+> [!Note]
+> To test the automation, go to `developer tools > actions > generate forecats` and run it manually.
+
+## Local Testing
+I got annoyed testing out new prompts on HA, so I made a folder to experiment locally. If you would like to use it:
+
+1. Clone the repo and enter the testing folder:
+  ```bash
+  git clone https://github.com/jwardbond/forecats.git && cd forecats/local_testing
+  ```
+1. Add your cat images to the `forecats_data/input_images` folder.
+2. Create a `.env` file with your Gemini API key.
+3. Copy the data from your automation into `test.py`.
+4. Run:
+  ```bash
+  uv run test.py
+  ```
