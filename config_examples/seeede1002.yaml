@@ -1,0 +1,210 @@
+esphome:
+  name: e-ink-frame
+  friendly_name: e-ink frame
+  on_boot:
+      then:
+        - light.turn_on: onboard_led
+        - logger.log: "Device booted"
+        - script.execute: update_battery_status
+
+
+esp32:
+  board: esp32-s3-devkitc-1
+  framework:
+    type: esp-idf
+
+logger:
+  level: DEBUG
+
+psram:
+  mode: octal
+  speed: 80MHz
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: ""
+
+ota:
+  - platform: esphome
+    password: ""
+
+
+wifi:
+  ssid: ""
+  password: ""
+  on_connect:
+    then:
+      - logger.log: "WiFi connected successfully"
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "E-Ink-Frame Fallback Hotspot"
+    password: ""
+
+
+display:
+  - platform: epaper_spi
+    id: epaper_display
+    model: Seeed-reTerminal-E1002
+    update_interval: never
+    lambda: |-
+      it.image(0, 0, id(forecats_image));
+
+
+captive_portal:
+
+
+spi:
+  clk_pin: GPIO7
+  mosi_pin: GPIO9
+
+
+output:
+  - platform: gpio
+    pin: GPIO6
+    id: led_output
+    inverted: true
+  - platform: gpio
+    pin: GPIO21
+    id: bsp_battery_enable
+
+
+# IMAGE DOWNLOAD LOGIC
+http_request:
+  verify_ssl: false
+  timeout: 20s
+  watchdog_timeout: 25s
+
+online_image:
+  - id: forecats_image
+    format: PNG
+    type: RGB
+    buffer_size: 65536 
+    url: http://homeassistant:8123/local/daily_forecats/forecats_optimized.png
+    on_download_finished:
+      - component.update: epaper_display
+
+
+# BUTTON LOGIC
+# Green button is deep sleep wakeup
+# Right white button is manual update image
+# Left white button is sleep until 5:10am
+binary_sensor: 
+  - platform: gpio
+    pin:
+      number: GPIO4 # Right white button
+      mode: INPUT_PULLUP
+    name: "Manual Update Button"
+    filters:
+      - delayed_on: 50ms
+    on_press:
+      then:
+        - logger.log: "Manual Update Button Pressed"
+        - component.update: forecats_image
+  - platform: gpio
+    pin:
+      number: GPIO5 # Left white button
+      mode: INPUT_PULLUP
+    name: "Sleep Until 5:00am Button"
+    internal: true
+    filters:
+      - delayed_on: 50ms
+    on_press:
+      then:
+        - logger.log: "Sleep Until 5:00am Button Pressed"
+        - delay: 10s
+        - light.turn_off: onboard_led
+        - deep_sleep.enter:
+            id: deep_sleep_ctrl
+            time_id: ha_time
+            until: "05:00:00"
+
+
+# DEEP SLEEP LOGIC
+deep_sleep:
+  id: deep_sleep_ctrl # Green button
+  wakeup_pin: GPIO3
+  wakeup_pin_mode: INVERT_WAKEUP
+
+time:
+  - platform: homeassistant
+    id: ha_time
+    timezone: "America/Toronto"
+    on_time:
+      # Download image every day at 5:10 AM
+      - seconds: 0
+        minutes: 10
+        hours: 5
+        then:
+          - component.update: forecats_image
+      # Sleep every day at 5:12 AM until 5:00 AM
+      - seconds: 0
+        minutes: 12
+        hours: 5
+        then:
+          - logger.log: "Entering deep sleep until 5:00 AM"
+          - light.turn_off: onboard_led
+          - deep_sleep.enter:
+              id: deep_sleep_ctrl
+              time_id: ha_time
+              until: "05:00:00"
+
+
+# LED LOGIC
+light:
+  - platform: binary
+    name: "Onboard LED"
+    internal: true
+    output: led_output
+    id: onboard_led
+
+
+# BATTERY LOGIC
+sensor:
+  - platform: adc
+    pin: GPIO1
+    name: "Battery Voltage"
+    id: battery_voltage
+    internal: true
+    update_interval: never
+    attenuation: 12db
+    filters:
+      - multiply: 2.0
+  - platform: template
+    name: "Battery Level"
+    id: battery_level
+    unit_of_measurement: "%"
+    icon: "mdi:battery"
+    device_class: battery
+    state_class: measurement
+    lambda: 'return id(battery_voltage).state;'
+    update_interval: never
+    filters:
+      - calibrate_linear:
+          - 4.15 -> 100.0
+          - 3.96 -> 90.0
+          - 3.91 -> 80.0
+          - 3.85 -> 70.0
+          - 3.80 -> 60.0
+          - 3.75 -> 50.0
+          - 3.68 -> 40.0
+          - 3.58 -> 30.0
+          - 3.49 -> 20.0
+          - 3.41 -> 10.0
+          - 3.30 -> 5.0
+          - 3.27 -> 0.0
+      - clamp:
+          min_value: 0
+          max_value: 100
+
+script:
+  - id: update_battery_status
+    mode: single
+    then:
+      - logger.log: "Starting battery measurement routine."
+      - output.turn_on: bsp_battery_enable
+      - delay: 50ms
+      - component.update: battery_voltage 
+      - component.update: battery_level
+      - output.turn_off: bsp_battery_enable 
+      - logger.log: "Battery status measured and circuit disabled."
