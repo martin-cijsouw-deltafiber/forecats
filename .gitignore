@@ -30,8 +30,8 @@ outputs/
 # Logs
 *.log*
 
-!assets/*.png
-!assets/*.jpg
+!static/*/*.png
+!static/*/*.jpg
 forecats_prompt_history.txt
 
 
