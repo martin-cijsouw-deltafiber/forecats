@@ -10,23 +10,19 @@ Wake up every morning (more) excited to look at the forecast! This is a custom H
 - Optional optimization for E-ink screens (currently limited to spectra6 panels)
 
 ## Examples
-<figure>
-  <img src="static/img/e-ink-screen.jpg" alt="A cat in front of an e-ink screen" width="300">
-  <figcaption>Display it on an e-ink screen</figcaption>
-</figure>
 
-<figure>
-  <img src="static/img/screenshot.png" alt="Home Assistant app screenshot" width="300">
-  <figcaption>Or on your HA Dashboard</figcaption>
-</figure>
+You can display it on an e-ink screen
 
-<figure>
-  <img src="static/img/example4.png" alt="Two cats with sunglasses" width="300">
-  <figcaption>Works in every season!</figcaption>
-</figure>
+<img src="static/img/e-ink-screen.jpg" alt="A cat in front of an e-ink screen" width="400">
+
+Or on your HA Dashboard
+
+<img src="static/img/screenshot.png" alt="Home Assistant app screenshot" width="400">
 
 
+Works in better weather
 
+<img src="static/img/example4.png" alt="Two cats with sunglasses" width="400">
 
 ## Getting Started
 > [!WARNING]
