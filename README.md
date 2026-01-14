@@ -2,7 +2,7 @@ Forecats
 =========
 Wake up every morning (more) excited to look at the forecast! This is a custom Home Assistant integration which uses forecast data, pictures of your cats, and Google's Nano Banana API to generate and serve weather-themed drawings of your precious kitties every morning. 
 
-Blog post [here](http://localhost:1313/posts/projects/forecats/).
+Blog post [here](https://secondthoughts.my/posts/projects/forecats/).
 
 ![A picture of two cats and a snowy, cloudy forecast combine to make a drawing of two cats in scarves looking out a window](static/img/diagram.png)
 
