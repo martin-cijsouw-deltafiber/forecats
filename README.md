@@ -1,6 +1,6 @@
 Forecats
 =========
-Wake up every morning (more) excited to look at the forecast! This is a custom Home Assistant integration which uses forecast data, pictures of your cats, and Google's Nano Banana API to generate and serve weather-themed drawings of your precious kitties every morning.
+Wake up every morning (more) excited to look at the forecast! This is a custom Home Assistant integration which uses forecast data, pictures of your cats, and Google's Nano Banana API to generate and serve weather-themed drawings of your precious kitties every morning. Blog post [here](http://localhost:1313/posts/projects/forecats/).
 
 ![A picture of two cats and a snowy, cloudy forecast combine to make a drawing of two cats in scarves looking out a window](static/img/diagram.png)
 
@@ -10,9 +10,9 @@ Wake up every morning (more) excited to look at the forecast! This is a custom H
 - Optional optimization for E-ink screens (currently limited to spectra6 panels)
 
 ## Examples
-![Two cats with sunglasses on a beach on a summer day, a wooden sign says 30 degrees](static/img/example4.png)
-
 ![A cat stands in front of an e-ink screen display a drawing of him and another cat](static/img/e-ink-screen.jpg)
+
+![Two cats with sunglasses on a beach on a summer day, a wooden sign says 30 degrees](static/img/example4.png)
 
 ![A screenshot of the home assistant app showing a cartoon of two cats reading a book](static/img/screenshot.png)
 
