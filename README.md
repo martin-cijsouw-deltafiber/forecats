@@ -1,6 +1,8 @@
 Forecats
 =========
-Wake up every morning (more) excited to look at the forecast! This is a custom Home Assistant integration which uses forecast data, pictures of your cats, and Google's Nano Banana API to generate and serve weather-themed drawings of your precious kitties every morning. Blog post [here](http://localhost:1313/posts/projects/forecats/).
+Wake up every morning (more) excited to look at the forecast! This is a custom Home Assistant integration which uses forecast data, pictures of your cats, and Google's Nano Banana API to generate and serve weather-themed drawings of your precious kitties every morning. 
+
+Blog post [here](http://localhost:1313/posts/projects/forecats/).
 
 ![A picture of two cats and a snowy, cloudy forecast combine to make a drawing of two cats in scarves looking out a window](static/img/diagram.png)
 
@@ -42,12 +44,12 @@ Works in better weather
   mkdir config/custom_components && mkdir -p config/forecats_data/input_images
   ```
 
-2. **Select and upload cat images:**
+2. **Select and upload cat images**
   - Choose good pictures of your cats.
   - Rename the files so the cats' names are in the filenames.
   - Upload them to `~/config/forecats_data/input_images`.
 
-3. **Download the repo:**
+3. **Download the repo**
 
   ```bash
   cd ~/config/custom_components && git clone https://github.com/jwardbond/forecats.git
@@ -67,15 +69,17 @@ Works in better weather
   forecats:
   ```
 
-5. **Set up the automation** using the [automation template](https://github.com/jwardbond/forecats/blob/3a6db63b4dc41ebb80d5a26b6beedf57305bd4ba/configurations/automation_fragment.yaml) (add to `config/automations.yaml`).
+5. **Set up the automation** using the [automation template](https://github.com/jwardbond/forecats/blob/ha_integration/config_examples/automation_fragment.yaml) (add to `config/automations.yaml`).
   - Make sure to fill out (or remove) any `<>` in the template.
 
-6. **Restart your server.**
+6. **Restart your server**
+
+7. **(Optional) Display on E-ink**
+  - I've included the esphome config file I used to flash the e-ink screen [here](https://github.com/jwardbond/forecats/blob/ha_integration/config_examples/seeede1002.yaml)
 
 **That's it!** Every morning at 5:00 am, the forecats integration will generate the following images in the `config/www/daily_forecats/` directory:
 - `forecats_original.png`: the unprocessed output image from Gemini
 - `forecats_optimized.png`: the output image cropped to your desired size and adjusted for display on your screen (currently only supports color adjustments for Spectra6 e-ink)
-
 
 These images should be accessible on your local network at (e.g.): `<YOUR HA URL>/local/daily_forecats/forecats_original.png`
 
