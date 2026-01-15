@@ -13,14 +13,14 @@ from PIL import Image
 try:
     from .image_processing import recolor_image, resize_image
     from .models import GenerateRequest
-except ImportError: # For local testing
+except ImportError:  # For local testing
     from image_processing import recolor_image, resize_image
     from models import GenerateRequest
 
 _LOGGER = logging.getLogger(__name__)
 
 
-def generate_cat_pic(data: GenerateRequest, config_dir: str) -> bool:
+def generate_cat_pic(data: GenerateRequest, config_dir: str) -> tuple[str, str]:
     """Generate, crop, and dither a cat picture based on the current weather using gemini.
 
     Args:
@@ -75,7 +75,7 @@ def generate_cat_pic(data: GenerateRequest, config_dir: str) -> bool:
 
     _LOGGER.info(f"Images saved to {static_dir}")
 
-    return True
+    return original_filepath, optimized_filepath
 
 
 def load_prompt_history(filepath: Path) -> list[str]:
