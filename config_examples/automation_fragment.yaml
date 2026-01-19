@@ -13,26 +13,25 @@
       target:
         entity_id: weather.forecast_home
       response_variable: todays_forecast
-    - action: forecats.generate_cat_picture
+    - action: forecats.generate_pet_picture
       data:
         gemini_api_key: "<YOUR API KEY>"
         location: "<YOUR LOCATION>"
         forecast: "{{ todays_forecast['weather.forecast_home'].forecast[0] }}"
-        cat_names:
-          - "<CAT 1>"
-          - "<CAT 2>"
+        pets:
+          - name: "<PET 1>"
+            type: "<PET 1 TYPE> (default: cat)"
+            description: >
+              <PET 1 DESCRIPTION>
+          - name: "<PET 2>"
+            type: "<PET 2 TYPE> (default: cat)"
+            description: >
+              <PET 2 DESCRIPTION>
           - "<...>"
-        cat_descriptions:
-          - >
-            <CAT 1 DESCRIPTION>
-          - >
-            <CAT 2 DESCRIPTION>
-          - >
-            <...>
         input_image_paths: 
-          - "/config/forecats_data/input_images/<CAT1>.jpg"
-          - "/config/forecats_data/input_images/<CAT1 and <CAT2>.jpg"
-          - "/config/forecats_data/input_images/<CAT2>.jpg"
+          - "/config/forecats_data/input_images/<PET1>.jpg"
+          - "/config/forecats_data/input_images/<PET1 and <PET2>.jpg"
+          - "/config/forecats_data/input_images/<PET2>.jpg"
           - "<...>" # Up to 14 images total
         art_styles: 
           - "comic book"

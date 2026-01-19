@@ -1,4 +1,4 @@
-"""Generate cat pictures based on weather forecasts using Gemini."""
+"""Generate pet pictures based on weather forecasts using Gemini."""
 
 import io
 import logging
@@ -20,15 +20,15 @@ except ImportError:  # For local testing
 _LOGGER = logging.getLogger(__name__)
 
 
-def generate_cat_pic(data: GenerateRequest, config_dir: str) -> tuple[str, str]:
-    """Generate, crop, and dither a cat picture based on the current weather using gemini.
+def generate_pet_pic(data: GenerateRequest, config_dir: str) -> tuple[str, str]:
+    """Generate, crop, and dither a pet picture based on the current weather using gemini.
 
     Args:
         data: Pydantic model containing all generation parameters
         config_dir: Home Assistant configuration directory for saving data
 
     Returns:
-        tuple[str, str]: Filenames of the saved PNG images of the generated cat pictures (original and recolored).
+        tuple[str, str]: Filenames of the saved PNG images of the generated pet pictures (original and recolored).
 
     """
     # Setup paths relative to HA config directory
@@ -111,10 +111,10 @@ def generate_activity(
     data: GenerateRequest,
     prompt_history: list[str],
 ) -> str:
-    """Describe an activity for the cats based on the weather forecast and date."""
+    """Describe an activity for the pets based on the weather forecast and date."""
     activity_prompt = textwrap.dedent(
         f"""
-        You are a prompt generator for static AI cartoon art generation model. Your task is to generate an activity for {len(data.cat_names)} cats to do based on the date and weather conditions provided, which will be used to draw a single picture.
+        You are a prompt generator for static AI cartoon art generation model. Your task is to generate an activity for {len(data.pets)} pets to do based on the date and weather conditions provided, which will be used to draw a single picture.
 
         The date is {data.forecast.get("datetime", "")}.
 
@@ -130,10 +130,10 @@ def generate_activity(
 
         Follow this prompt:
 
-        Generate a fun activity for {len(data.cat_names)} cats to do together that fits the weather conditions and time of year.
+        Generate a fun activity for {len(data.pets)} pets to do together that fits the weather conditions and time of year.
 
         Heuristics:
-        - You can anthropomorphize the cats to do human-like activities, or you can make them do more cat-like activities occasionally.
+        - You can anthropomorphize the pets to do human-like activities, or you can make them do more pet-like activities occasionally.
         - The activity can be either indoors or outdoors
         - Activities should be 30% set in locations in {data.location}, and 20% set in other specific locations with similar weather, and 50% set in generic locations.
         - The mix of indoor/outdoor should be seasonally appropriate. Summer is mostly outdoor, winter is 50/50 indoor/outdoor.
@@ -142,11 +142,11 @@ def generate_activity(
         Rules:
         - You must come up with the following:
             - Activity: A short (<5 words) description of the activity
-            - Foreground: A description of what the cats are doing, including any clothing or accessories they are wearing.
+            - Foreground: A description of what the pets are doing, including any clothing or accessories they are wearing.
             - Background: A description of the background elements (e.g. buildings, landmarks, trees, furniture, etc.)
         - You don't have to describe the weather
-        - Do not describe the general appearance of the cats, with the exception of clothing or accessories needed for the activity
-        - The activity should involve all {len(data.cat_names)} cats
+        - Do not describe the general appearance of the pets, with the exception of clothing or accessories needed for the activity
+        - The activity should involve all {len(data.pets)} pets
         - The activity must not be similar to any of the last 20 activities you generated.
         - Respond in a single line, no more than 100 words
         - Do not use newlines
@@ -173,19 +173,19 @@ def generate_image(
     input_images: dict[str, Image.Image],
     art_style: str,
 ) -> Image.Image:
-    """Generate a cartoon image of cats based on the weather forecast and activity using gemini."""
+    """Generate a cartoon image of pets based on the weather forecast and activity using gemini."""
+    pets_information = "\n".join(
+        f"- {pet.name}, {pet.type}, {pet.description}" for pet in data.pets
+    )
     image_generation_prompt = textwrap.dedent(
         f"""
-        You are an AI artist creating daily weather illustrations featuring cats based on a weather forecast and an activity that will be given to you. Your task is to generate a vibrant and engaging illustration that captures the essence of the weather conditions and the cats' activity in a specific art style.
+        You are an AI artist creating daily weather illustrations featuring pets based on a weather forecast and an activity that will be given to you. Your task is to generate a vibrant and engaging illustration that captures the essence of the weather conditions and the pets' activity in a specific art style.
 
         The weather forecast is for {data.location} on {data.forecast.get("datetime", "")}:
         {data.forecast}
 
-        You have {len(data.cat_names)} cats to illustrate:
-        {", ".join(data.cat_names)}.
-
-        Here are their descriptions:
-        {"\n- ".join(data.cat_descriptions)}
+        You have {len(data.pets)} pets to illustrate, here are their name, type, and descriptions:
+        {pets_information}
 
         The activity they are doing today is:
         {activity}
@@ -198,7 +198,7 @@ def generate_image(
 
         ***********************************************
 
-        Create a vibrant and engaging illustration in the recommended style that captures the essence of the weather conditions and the cats' activity. Use colors and elements that reflect the forecasted weather, making the scene lively and appropriate for the time of year.
+        Create a vibrant and engaging illustration in the recommended style that captures the essence of the weather conditions and the pets' activity. Use colors and elements that reflect the forecasted weather, making the scene lively and appropriate for the time of year.
 
         Additionally, create a small box in the bottom left corner, in the style of the image. This box should contain:
         - A < three word description of the weather conditions
@@ -207,7 +207,7 @@ def generate_image(
 
         Heuristics:
         - Try to capture the mood of the weather and activity in the illustration (e.g., bright and sunny, cozy indoors during snow, etc.).
-        - Try to capture the cats personalities, but it is okay if they change based on the weather and activity.
+        - Try to capture the pets personalities, but it is okay if they change based on the weather and activity.
         - This is for a color e-ink screen. I will handle the dithering later, but try to avoid very fine details that may be lost in dithering.
 
         Rules:
@@ -216,8 +216,8 @@ def generate_image(
         - The weather is important, so include elements that clearly indicate the weather conditions
         - Do not place the temperature box too close to the edge, or overlapping any important details.
         - Style the temperature box to fit the overall image and art style.
-        - Use the input images as references for the cats' appearances.
-        - Style the cats to fit the activity and weather conditions.
+        - Use the input images as references for the pets' appearances.
+        - Style the pets to fit the activity and weather conditions.
         """,
     )
 
