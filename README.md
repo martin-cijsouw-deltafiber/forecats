@@ -34,6 +34,7 @@ Works in better weather
 - A [home assistant server](https://www.home-assistant.io/installation/) with the following add-ons
   - [File editor add-on](https://www.home-assistant.io/common-tasks/os/#installing-and-using-the-file-editor-add-on)
   - [Terminal and ssh add-on](https://www.home-assistant.io/common-tasks/os/#installing-and-using-the-ssh-add-on)
+  - [Meteorologisk institutt (Met.no)](https://www.home-assistant.io/integrations/met/) integration
 - A google AI studio [API key](https://aistudio.google.com/api-keys). Note that, as of writing, you need to input billing details to get the free credits.
 
 ### Setup
@@ -115,3 +116,4 @@ You will need a screen controllable with ESPHOME. I used seeed studio's [e10002 
 - [ ] Make automation into blueprint for easier install
 - [ ] Separate e-ink instructions
 - [ ] See if I can make it more configurable from GUI
+- [ ] Support for multiple cities
