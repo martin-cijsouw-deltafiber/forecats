@@ -38,16 +38,18 @@ Works in better weather
 - *(OPTIONAL)* E-ink screen controllable with ESPHOME. I used seeed studio's [e10002 spectra6 display](https://www.seeedstudio.com/reTerminal-E1002-p-6533.html)
 
 ### Setup
+*Do the following in your HA server, using the Terminal & SSH addon, or `docker exec` if you are running a container on a host system*
+
 1. **Create the necessary directory structure** in your Home Assistant server:
 
   ```bash
-  mkdir config/custom_components && mkdir -p config/forecats_data/input_images
+  mkdir config/custom_components && mkdir -p /config/forecats_data/input_images
   ```
 
 2. **Select and upload cat images**
   - Choose good pictures of your cats.
   - Rename the files so the cats' names are in the filenames.
-  - Upload them to `~/config/forecats_data/input_images`.
+  - Upload them to `/config/forecats_data/input_images`.
 
 3. **Download the repo**
 
