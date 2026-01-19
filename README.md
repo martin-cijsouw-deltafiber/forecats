@@ -43,7 +43,7 @@ Works in better weather
 1. **Create the necessary directory structure** in your Home Assistant server:
 
   ```bash
-  mkdir config/custom_components && mkdir -p /config/forecats_data/input_images
+  mkdir /config/custom_components && mkdir -p /config/forecats_data/input_images
   ```
 
 2. **Select and upload cat images**
