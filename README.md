@@ -34,7 +34,7 @@ Works in better weather
 - A [home assistant server](https://www.home-assistant.io/installation/) with the following add-ons
   - [File editor add-on](https://www.home-assistant.io/common-tasks/os/#installing-and-using-the-file-editor-add-on)
   - [Terminal and ssh add-on](https://www.home-assistant.io/common-tasks/os/#installing-and-using-the-ssh-add-on)
-- A google AI studio [API key](https://aistudio.google.com/api-keys)
+- A google AI studio [API key](https://aistudio.google.com/api-keys).
 - *(OPTIONAL)* E-ink screen controllable with ESPHOME. I used seeed studio's [e10002 spectra6 display](https://www.seeedstudio.com/reTerminal-E1002-p-6533.html)
 
 ### Setup
@@ -101,3 +101,10 @@ I got annoyed testing out new prompts on HA, so I made a folder to experiment lo
   ```bash
   uv run test.py
   ```
+
+## TODO
+-[ ] Enrol in HACS for easier install
+-[ ] Option to save images to dir
+- [ ] Make automation into blueprint for easier install
+- [ ] Separate e-ink instructions
+- [ ] 
