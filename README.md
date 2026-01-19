@@ -35,7 +35,6 @@ Works in better weather
   - [File editor add-on](https://www.home-assistant.io/common-tasks/os/#installing-and-using-the-file-editor-add-on)
   - [Terminal and ssh add-on](https://www.home-assistant.io/common-tasks/os/#installing-and-using-the-ssh-add-on)
 - A google AI studio [API key](https://aistudio.google.com/api-keys). Note that, as of writing, you need to input billing details to get the free credits.
-- *(OPTIONAL)* E-ink screen controllable with ESPHOME. I used seeed studio's [e10002 spectra6 display](https://www.seeedstudio.com/reTerminal-E1002-p-6533.html)
 
 ### Setup
 *Do the following in your HA server, using the Terminal & SSH addon, or `docker exec` if you are running a container on a host system*
@@ -76,9 +75,6 @@ Works in better weather
 
 6. **Restart your server**
 
-7. **(Optional) Display on E-ink**
-  - I've included the esphome config file I used to flash the e-ink screen [here](https://github.com/jwardbond/forecats/blob/ha_integration/config_examples/seeede1002.yaml)
-
 **That's it!** Every morning at 5:00 am, the forecats integration will generate the following images in the `config/www/daily_forecats/` directory:
 - `forecats_original.png`: the unprocessed output image from Gemini
 - `forecats_optimized.png`: the output image cropped to your desired size and adjusted for display on your screen (currently only supports color adjustments for Spectra6 e-ink)
@@ -103,6 +99,10 @@ I got annoyed testing out new prompts on HA, so I made a folder to experiment lo
   ```bash
   uv run test.py
   ```
+
+## (Optional) Sending to an e-ink screen
+You will need a screen controllable with ESPHOME. I used seeed studio's [e10002 spectra6 display](https://www.seeedstudio.com/reTerminal-E1002-p-6533.html). I've included the eshome config I use [here](https://github.com/jwardbond/forecats/blob/ha_integration/config_examples/seeede1002.yaml). The basic idea is to set the automation to run every day at a 5:00 am, and have the screen wake up every day slightly before that, download the picture at 5:01 am (to leave time to generate), and then go into deep sleep until the next day.
+
 
 ## TODO
 -[ ] Enrol in HACS for easier install
