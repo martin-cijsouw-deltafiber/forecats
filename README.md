@@ -81,9 +81,14 @@ Works in better weather
 
 These images should be accessible on your local network at (e.g.): `<YOUR HA URL>/local/daily_forecats/forecats_original.png`
 
+>[!Note]
+> It takes 10-30 seconds for gemini to generate the image. If you have any automations grabbing the image, then I recommend setting them to run a minute after the `generate forecats` autmation is set to run.
 
 > [!Note]
 > To test the automation, go to `developer tools > actions > generate forecats` and run it manually.
+
+
+
 
 ## Local Testing
 I got annoyed testing out new prompts on HA, so I made a folder to experiment locally. If you would like to use it:
@@ -105,8 +110,8 @@ You will need a screen controllable with ESPHOME. I used seeed studio's [e10002 
 
 
 ## TODO
--[ ] Enrol in HACS for easier install
--[ ] Option to save images to dir
+- [ ] Enrol in HACS for easier install
+- [ ] Option to save images to dir
 - [ ] Make automation into blueprint for easier install
 - [ ] Separate e-ink instructions
-- [ ] 
+- [ ] See if I can make it more configurable from GUI
