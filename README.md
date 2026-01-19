@@ -52,7 +52,7 @@ Works in better weather
 3. **Download the repo**
 
   ```bash
-  cd ~/config/custom_components && git clone https://github.com/jwardbond/forecats.git
+  cd /config/custom_components && git clone https://github.com/jwardbond/forecats.git
   ```
 
 4. **Enable the custom integration** by adding `forecats:` to your configuration file:
