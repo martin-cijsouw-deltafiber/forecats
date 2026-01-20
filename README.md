@@ -107,7 +107,7 @@ I got annoyed testing out new prompts on HA, so I made a folder to experiment lo
   ```
 
 ## (Optional) Sending to an e-ink screen
-You will need a screen controllable with ESPHOME. I used seeed studio's [e10002 spectra6 display](https://www.seeedstudio.com/reTerminal-E1002-p-6533.html). I've included the eshome config I use [here](https://github.com/jwardbond/forecats/blob/ha_integration/config_examples/seeede1002.yaml). The basic idea is to set the automation to run every day at a 5:00 am, and have the screen wake up every day slightly before that, download the picture at 5:01 am (to leave time to generate), and then go into deep sleep until the next day.
+You will need a screen controllable with ESPHOME. I used seeed studio's [e10002 spectra6 display](https://www.seeedstudio.com/reTerminal-E1002-p-6533.html). I've included the esphome config I use [here](https://github.com/jwardbond/forecats/blob/ha_integration/config_examples/seeede1002.yaml). The basic idea is to set the automation to run every day at a 5:00 am, and have the screen wake up every day slightly before that, download the picture at 5:01 am (to leave time to generate), and then go into deep sleep until the next day.
 
 
 ## TODO
