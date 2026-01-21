@@ -135,7 +135,7 @@ def generate_activity(
         Heuristics:
         - You can anthropomorphize the cats to do human-like activities, or you can make them do more cat-like activities occasionally.
         - The activity can be either indoors or outdoors
-        - Activities should be 30% set in locations in Toronto, and 20% set in other specific locations with similar weather, and 50% set in generic locations.
+        - Activities should be 30% set in locations in {data.location}, and 20% set in other specific locations with similar weather, and 50% set in generic locations.
         - The mix of indoor/outdoor should be seasonally appropriate. Summer is mostly outdoor, winter is 50/50 indoor/outdoor.
         - It can be a mundane activity (waiting for the bus, commuting, shopping, reading, etc.) or it can be exciting (playing in the snow, sports, going to a festival, playing tag, games, etc.).
 
