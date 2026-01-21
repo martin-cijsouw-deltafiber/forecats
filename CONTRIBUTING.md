@@ -6,7 +6,7 @@
 1. **Fork the repository** and create your branch from `master`.
 2. **Make your changes** with a descriptive commit messages.
 3. **Test your changes** to make sure nothing is broken.
-4. **Submit a pull request** with a description of your changes.
+4. **Submit a pull request** with a description of your changes. If you are fixing an issue please add `closes #\<issue number\>` to the PR description.
 
 ## Testing
 
