@@ -145,7 +145,7 @@ def generate_activity(
             - Foreground: A description of what the cats are doing, including any clothing or accessories they are wearing.
             - Background: A description of the background elements (e.g. buildings, landmarks, trees, furniture, etc.)
         - You don't have to describe the weather
-        - Do not describe the appearance of the cats, with the acception of clothing or accessories needed for the activity
+        - Do not describe the general appearance of the cats, with the exception of clothing or accessories needed for the activity
         - The activity should involve all {len(data.cat_names)} cats
         - The activity must not be similar to any of the last 20 activities you generated.
         - Respond in a single line, no more than 100 words
