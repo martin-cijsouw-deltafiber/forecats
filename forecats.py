@@ -204,6 +204,7 @@ def generate_image(
         - A < three word description of the weather conditions
         - The daily high temperature (forecast field: temperature)
         - The daily low temperature (forecast field: templow)
+        - Note that the temperatures are in {data.temperature_unit}
 
         Heuristics:
         - Try to capture the mood of the weather and activity in the illustration (e.g., bright and sunny, cozy indoors during snow, etc.).

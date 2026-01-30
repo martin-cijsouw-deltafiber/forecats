@@ -15,6 +15,7 @@ SERVICE_SCHEMA = vol.Schema(
         vol.Required("gemini_api_key"): cv.string,
         vol.Required("location"): cv.string,
         vol.Required("forecast"): dict,
+        vol.Required("temperature_unit"): cv.string,
         vol.Required("cat_names"): [cv.string],
         vol.Required("cat_descriptions"): [cv.string],
         vol.Required("input_image_paths"): [cv.string],

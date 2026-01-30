@@ -11,6 +11,9 @@ generate_cat_picture:
     forecast:
       description: Weather forecast data
       required: true
+    temperature_unit:
+      description: Temperature unit (e.g., "C" or "F")
+      required: true
     cat_names:
       description: Names of your cats
       required: true
