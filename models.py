@@ -14,6 +14,7 @@ class GenerateRequest(BaseModel):
 
     location: str
     forecast: dict
+    temperature_unit: str
     pets: list[Pet]
     input_image_paths: list[str]
     art_styles: list[str]

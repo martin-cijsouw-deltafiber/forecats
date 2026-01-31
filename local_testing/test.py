@@ -27,6 +27,7 @@ data = GenerateRequest(
     gemini_api_key=os.getenv("GEMINI_API_KEY"),
     location="Toronto, Ontario, Canada",
     forecast={"datetime": "2025-6-07", "temperature": -10, "templow": -15, "condition": "sunny"},
+    temperature_unit="C",  
     pets=[
         Pet(
             name="Milo",

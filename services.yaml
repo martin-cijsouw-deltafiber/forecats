@@ -11,6 +11,9 @@ generate_pet_picture:
     forecast:
       description: Weather forecast data
       required: true
+    temperature_unit:
+      description: Temperature unit (e.g., "C" or "F")
+      required: true
     pets:
       description: "list of your pets, each pet must have a name and description, and can have a type (default: cat)"
       required: true

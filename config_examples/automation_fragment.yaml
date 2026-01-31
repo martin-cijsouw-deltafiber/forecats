@@ -18,6 +18,7 @@
         gemini_api_key: "<YOUR API KEY>"
         location: "<YOUR LOCATION>"
         forecast: "{{ todays_forecast['weather.forecast_home'].forecast[0] }}"
+        temperature_unit: "{{ state_attr('weather.home', 'temperature_unit') }}"
         pets:
           - name: "<PET 1>"
             type: "<PET 1 TYPE> (default: cat)"
