@@ -1,16 +1,21 @@
 from pydantic import BaseModel
 
 
+class Pet(BaseModel):
+    name: str
+    type: str
+    description: str
+
+
 class GenerateRequest(BaseModel):
-    """Request model for generating cat pictures."""
+    """Request model for generating pet pictures."""
 
     gemini_api_key: str
 
     location: str
     forecast: dict
     temperature_unit: str
-    cat_names: list[str]
-    cat_descriptions: list[str]
+    pets: list[Pet]
     input_image_paths: list[str]
     art_styles: list[str]
 

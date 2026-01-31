@@ -1,6 +1,6 @@
-generate_cat_picture:
-  name: Generate Cat Picture
-  description: Generate a weather-themed cat picture
+generate_pet_picture:
+  name: Generate Pet Picture
+  description: Generate a weather-themed pet picture
   fields:
     location:
       description: Location for weather context
@@ -14,16 +14,27 @@ generate_cat_picture:
     temperature_unit:
       description: Temperature unit (e.g., "C" or "F")
       required: true
-    cat_names:
-      description: Names of your cats
+    pets:
+      description: "list of your pets, each pet must have a name and description, and can have a type (default: cat)"
       required: true
       selector:
         object:
-    cat_descriptions:
-      description: Descriptions of your cats
-      required: true
-      selector:
-        object:
+          label_field: name
+          description_field: type
+          multiple: true
+          fields:
+            name:
+              label: Name
+              selector:
+                text:
+            type:
+              label: Type
+              selector:
+                text:
+            description:
+              label: Description
+              selector:
+                text:
     input_image_paths:
       description: Paths to reference images
       required: true
