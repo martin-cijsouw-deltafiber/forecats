@@ -27,7 +27,7 @@ data = GenerateRequest(
     gemini_api_key=os.getenv("GEMINI_API_KEY"),
     location="Toronto, Ontario, Canada",
     forecast={"datetime": "2025-6-07", "temperature": -10, "templow": -15, "condition": "sunny"},
-    temperature_unit="C",  
+    temperature_unit="C",
     pets=[
         Pet(
             name="Milo",
@@ -38,6 +38,11 @@ data = GenerateRequest(
             name="Tolmie",
             type="cat",
             description="Tolmie is a ragdoll, he has pretty blue eyes, and his black pupils get big when he's excited. We like to imagine that he is goofy. He loves his big brother Milo, playing with strings, rolling on the ground belly-up, and sprinting full speed around the house yelling. He is a little bigger (longer) than Milo, and all fluff. When he is happy he likes to stick his tail up.",
+        ),
+        Pet(
+            name="Brutus",
+            type="dog",
+            description="Brutus is a golden retriever. He is a year old and we like to imagine that he is playful and energetic. He has brown eyes, with big pupils when he is excited. He loves playing fetch, running around the yard, and cuddling with his family. He is a little bigger (longer) than Tolmie, and all fluff. When he is happy he likes to stick his tail up.",
         ),
     ],
     input_image_paths=input_image_paths,

@@ -112,9 +112,12 @@ def generate_activity(
     prompt_history: list[str],
 ) -> str:
     """Describe an activity for the pets based on the weather forecast and date."""
+    pet_types = ", ".join(f"{pet.name}, {pet.type}" for pet in data.pets)
     activity_prompt = textwrap.dedent(
         f"""
         You are a prompt generator for static AI cartoon art generation model. Your task is to generate an activity for {len(data.pets)} pets to do based on the date and weather conditions provided, which will be used to draw a single picture.
+
+        The pets are: {pet_types}.
 
         The date is {data.forecast.get("datetime", "")}.
 
