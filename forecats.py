@@ -115,7 +115,7 @@ def generate_activity(
     pet_types = ", ".join(f"{pet.name}, {pet.type}" for pet in data.pets)
     activity_prompt = textwrap.dedent(
         f"""
-        You are a prompt generator for static AI cartoon art generation model. Your task is to generate an activity for {len(data.pets)} pets to do based on the date and weather conditions provided, which will be used to draw a single picture.
+        You are a prompt generator for static AI cartoon art generation model. Your task is to generate a seasonally appropriate activity for {len(data.pets)} pets to do based on the date and weather conditions provided, which will be used to draw a single picture.
 
         The pets are: {pet_types}.
 
@@ -138,6 +138,7 @@ def generate_activity(
         Heuristics:
         - You can anthropomorphize the pets to do human-like activities, or you can make them do more pet-like activities occasionally.
         - The activity can be either indoors or outdoors
+        - The activity should be seasonally appropriate
         - Activities should be 30% set in locations in {data.location}, and 20% set in other specific locations with similar weather, and 50% set in generic locations.
         - The mix of indoor/outdoor should be seasonally appropriate. Summer is mostly outdoor, winter is 50/50 indoor/outdoor.
         - It can be a mundane activity (waiting for the bus, commuting, shopping, reading, etc.) or it can be exciting (playing in the snow, sports, going to a festival, playing tag, games, etc.).
@@ -210,7 +211,7 @@ def generate_image(
         - Note that the temperatures are in {data.temperature_unit}
 
         Heuristics:
-        - Try to capture the mood of the weather and activity in the illustration (e.g., bright and sunny, cozy indoors during snow, etc.).
+        - Try to capture the mood of the weather, season, and activity in the illustration (e.g., bright and sunny, cozy indoors during snow, etc.).
         - Try to capture the pets personalities, but it is okay if they change based on the weather and activity.
         - This is for a color e-ink screen. I will handle the dithering later, but try to avoid very fine details that may be lost in dithering.
 
