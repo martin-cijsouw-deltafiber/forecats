@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """Generate pet pictures based on weather forecasts using Gemini or OpenRouter."""
 
 import base64
@@ -9,10 +11,16 @@ import textwrap
 import urllib.error
 import urllib.request
 from pathlib import Path
+from typing import Any
 
-from google import genai
-from google.genai import types
 from PIL import Image
+
+try:
+    from google import genai
+    from google.genai import types
+except ImportError:
+    genai = None
+    types = None
 
 try:
     from .image_processing import recolor_image, resize_image
@@ -62,6 +70,9 @@ def generate_pet_pic(data: GenerateRequest, config_dir: str) -> tuple[str, str]:
     _LOGGER.info(f"Selected provider: {provider}")
     _LOGGER.info(f"Selected art style: {art_style}")
 
+    if provider == "gemini" and genai is None:
+        msg = "provider=gemini requires google-genai package to be installed"
+        raise RuntimeError(msg)
     client = genai.Client(api_key=data.gemini_api_key) if provider == "gemini" else None
 
     # Generate activity description
@@ -171,7 +182,7 @@ def _build_activity_prompt(data: GenerateRequest, prompt_history: list[str]) -> 
 
 def generate_activity(
     provider: str,
-    client: genai.Client | None,
+    client: Any,
     data: GenerateRequest,
     prompt_history: list[str],
 ) -> str:
@@ -283,7 +294,7 @@ def _build_image_generation_prompt(
 
 def generate_image(
     provider: str,
-    client: genai.Client | None,
+    client: Any,
     data: GenerateRequest,
     activity: str,
     input_images: dict[str, Image.Image],
@@ -302,6 +313,9 @@ def generate_image(
     if provider == "gemini":
         if client is None:
             msg = "Gemini client is required for provider=gemini"
+            raise RuntimeError(msg)
+        if types is None:
+            msg = "Gemini types unavailable: google-genai package is not installed"
             raise RuntimeError(msg)
 
         response = client.models.generate_content(
@@ -330,39 +344,41 @@ def generate_image(
         raise RuntimeError(msg)
 
     response = _openrouter_post(
-        "/images/generations",
+        "/chat/completions",
         {
             "model": data.openrouter_image_model,
-            "prompt": image_generation_prompt,
-            "size": _openrouter_image_size(
-                data.image_gen_aspect_ratio,
-                data.image_gen_resolution,
-            ),
-            "response_format": "b64_json",
-            "n": 1,
+            "messages": [{"role": "user", "content": image_generation_prompt}],
+            "modalities": ["image", "text"],
+            "stream": False,
+            "image_config": {
+                "aspect_ratio": data.image_gen_aspect_ratio,
+            },
         },
         data.openrouter_api_key,
     )
 
-    image_data = response.get("data", [])
-    if not image_data:
-        msg = "OpenRouter returned no image data."
+    choices = response.get("choices", [])
+    if not choices:
+        msg = "OpenRouter returned no image choices."
+        raise RuntimeError(msg)
+    images = choices[0].get("message", {}).get("images", [])
+    if not images:
+        msg = "OpenRouter returned no images in chat completion response."
         raise RuntimeError(msg)
 
-    first = image_data[0]
-    if first.get("b64_json"):
-        image_bytes = base64.b64decode(first["b64_json"])
+    image_url = images[0].get("image_url", {}).get("url")
+    if not image_url:
+        msg = "OpenRouter image response missing image_url.url."
+        raise RuntimeError(msg)
+    if image_url.startswith("data:image"):
+        _, encoded = image_url.split(",", maxsplit=1)
+        image_bytes = base64.b64decode(encoded)
         img_pil = Image.open(io.BytesIO(image_bytes))
         return img_pil.copy()
-
-    if first.get("url"):
-        with urllib.request.urlopen(first["url"], timeout=60) as image_response:
-            image_bytes = image_response.read()
-        img_pil = Image.open(io.BytesIO(image_bytes))
-        return img_pil.copy()
-
-    msg = "OpenRouter image response had neither b64_json nor url."
-    raise RuntimeError(msg)
+    with urllib.request.urlopen(image_url, timeout=60) as image_response:
+        image_bytes = image_response.read()
+    img_pil = Image.open(io.BytesIO(image_bytes))
+    return img_pil.copy()
 
 
 def _openrouter_post(path: str, payload: dict, api_key: str | None) -> dict:
@@ -401,23 +417,3 @@ def _extract_openrouter_text(content: object) -> str:
                     parts.append(text)
         return "\n".join(parts).strip()
     return ""
-
-
-def _openrouter_image_size(aspect_ratio: str, resolution: str) -> str:
-    base = {"1K": 1024, "2K": 1536}.get(resolution, 1024)
-    try:
-        width_ratio, height_ratio = aspect_ratio.split(":", maxsplit=1)
-        ratio = float(width_ratio) / float(height_ratio)
-        if ratio >= 1:
-            width = base
-            height = max(256, int(base / ratio))
-        else:
-            height = base
-            width = max(256, int(base * ratio))
-        # keep common model-friendly dimensions
-        width = max(256, (width // 64) * 64)
-        height = max(256, (height // 64) * 64)
-        return f"{width}x{height}"
-    except (ValueError, ZeroDivisionError):
-        _LOGGER.warning(f"Could not parse aspect ratio {aspect_ratio}, using 1024x1024")
-        return "1024x1024"

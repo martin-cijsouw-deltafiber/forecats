@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """Image processing utilities for forecats."""
 
 import logging

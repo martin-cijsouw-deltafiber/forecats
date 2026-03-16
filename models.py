@@ -1,3 +1,7 @@
+from __future__ import annotations
+
+from typing import Dict, List, Optional
+
 from pydantic import BaseModel
 
 
@@ -11,20 +15,20 @@ class GenerateRequest(BaseModel):
     """Request model for generating pet pictures."""
 
     provider: str = "gemini"
-    gemini_api_key: str | None = None
-    openrouter_api_key: str | None = None
-    openrouter_text_model: str | None = None
-    openrouter_image_model: str | None = None
+    gemini_api_key: Optional[str] = None
+    openrouter_api_key: Optional[str] = None
+    openrouter_text_model: Optional[str] = None
+    openrouter_image_model: Optional[str] = None
 
     location: str
-    forecast: dict
+    forecast: Dict
     temperature_unit: str
-    pets: list[Pet]
-    input_image_paths: list[str]
-    art_styles: list[str]
+    pets: List[Pet]
+    input_image_paths: List[str]
+    art_styles: List[str]
 
     image_gen_aspect_ratio: str
     image_gen_resolution: str
     final_image_size: str
 
-    display_profile: str | None
+    display_profile: Optional[str]
