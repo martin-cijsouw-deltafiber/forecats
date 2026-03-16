@@ -1,9 +1,13 @@
-"""Generate pet pictures based on weather forecasts using Gemini."""
+"""Generate pet pictures based on weather forecasts using Gemini or OpenRouter."""
 
+import base64
 import io
+import json
 import logging
 import random
 import textwrap
+import urllib.error
+import urllib.request
 from pathlib import Path
 
 from google import genai
@@ -18,19 +22,11 @@ except ImportError:  # For local testing
     from models import GenerateRequest
 
 _LOGGER = logging.getLogger(__name__)
+_OPENROUTER_API_BASE = "https://openrouter.ai/api/v1"
 
 
 def generate_pet_pic(data: GenerateRequest, config_dir: str) -> tuple[str, str]:
-    """Generate, crop, and dither a pet picture based on the current weather using gemini.
-
-    Args:
-        data: Pydantic model containing all generation parameters
-        config_dir: Home Assistant configuration directory for saving data
-
-    Returns:
-        tuple[str, str]: Filenames of the saved PNG images of the generated pet pictures (original and recolored).
-
-    """
+    """Generate, crop, and dither a pet picture based on weather."""
     # Setup paths relative to HA config directory
     config_path = Path(config_dir)
     data_dir = config_path / "forecats_data"
@@ -41,17 +37,36 @@ def generate_pet_pic(data: GenerateRequest, config_dir: str) -> tuple[str, str]:
 
     prompt_history_filepath = data_dir / "forecats_prompt_history.txt"
 
+    provider = (data.provider or "gemini").lower()
+    if provider == "gemini" and not data.gemini_api_key:
+        msg = "provider=gemini requires gemini_api_key"
+        raise ValueError(msg)
+    if provider == "openrouter":
+        if not data.openrouter_api_key:
+            msg = "provider=openrouter requires openrouter_api_key"
+            raise ValueError(msg)
+        if not data.openrouter_text_model:
+            msg = "provider=openrouter requires openrouter_text_model"
+            raise ValueError(msg)
+        if not data.openrouter_image_model:
+            msg = "provider=openrouter requires openrouter_image_model"
+            raise ValueError(msg)
+    if provider not in {"gemini", "openrouter"}:
+        msg = f"Unsupported provider: {provider}"
+        raise ValueError(msg)
+
     # Load resources
     prompt_history = load_prompt_history(prompt_history_filepath)
     images = load_images(data.input_image_paths)
     art_style = random.choice(data.art_styles)
+    _LOGGER.info(f"Selected provider: {provider}")
     _LOGGER.info(f"Selected art style: {art_style}")
+
+    client = genai.Client(api_key=data.gemini_api_key) if provider == "gemini" else None
 
     # Generate activity description
     # TODO add an if-else to allow for date/activity overrides on particular days
-    client = genai.Client(api_key=data.gemini_api_key)
-    activity = generate_activity(client, data, prompt_history)
-
+    activity = generate_activity(provider, client, data, prompt_history)
     _LOGGER.info(f"Generated activity: {activity}")
 
     # Update prompt history
@@ -61,7 +76,7 @@ def generate_pet_pic(data: GenerateRequest, config_dir: str) -> tuple[str, str]:
 
     # Generate image
     _LOGGER.info(f"Generating image for: {activity}")
-    image = generate_image(client, data, activity, images, art_style)
+    image = generate_image(provider, client, data, activity, images, art_style)
 
     # Post-process image
     resized_image = resize_image(image.copy(), data.final_image_size)
@@ -106,14 +121,9 @@ def load_images(image_paths: list[str], max_size: int = 1024) -> dict[str, Image
     return {p.name: resize(p) for p in valid_paths}
 
 
-def generate_activity(
-    client: genai.Client,
-    data: GenerateRequest,
-    prompt_history: list[str],
-) -> str:
-    """Describe an activity for the pets based on the weather forecast and date."""
+def _build_activity_prompt(data: GenerateRequest, prompt_history: list[str]) -> str:
     pet_types = ", ".join(f"{pet.name}, {pet.type}" for pet in data.pets)
-    activity_prompt = textwrap.dedent(
+    return textwrap.dedent(
         f"""
         You are a prompt generator for static AI cartoon art generation model. Your task is to generate a seasonally appropriate activity for {len(data.pets)} pets to do based on the date and weather conditions provided, which will be used to draw a single picture.
 
@@ -158,30 +168,76 @@ def generate_activity(
         """,
     )
 
-    activity_response = client.models.generate_content(
-        model="gemini-2.5-flash-lite",
-        contents=activity_prompt,
+
+def generate_activity(
+    provider: str,
+    client: genai.Client | None,
+    data: GenerateRequest,
+    prompt_history: list[str],
+) -> str:
+    """Describe an activity for the pets based on the weather forecast and date."""
+    activity_prompt = _build_activity_prompt(data, prompt_history)
+
+    if provider == "gemini":
+        if client is None:
+            msg = "Gemini client is required for provider=gemini"
+            raise RuntimeError(msg)
+        activity_response = client.models.generate_content(
+            model="gemini-2.5-flash-lite",
+            contents=activity_prompt,
+        )
+        if not activity_response.text:
+            msg = "Gemini returned no activity."
+            raise RuntimeError(msg)
+        return activity_response.text
+
+    response = _openrouter_post(
+        "/chat/completions",
+        {
+            "model": data.openrouter_text_model,
+            "messages": [{"role": "user", "content": activity_prompt}],
+            "temperature": 0.8,
+        },
+        data.openrouter_api_key,
     )
 
-    if not activity_response.text:
-        msg = "Gemini returned no activity."
+    choices = response.get("choices", [])
+    if not choices:
+        msg = "OpenRouter returned no activity choices."
         raise RuntimeError(msg)
+    content = choices[0].get("message", {}).get("content")
+    text = _extract_openrouter_text(content)
+    if not text:
+        msg = "OpenRouter returned empty activity text."
+        raise RuntimeError(msg)
+    return text
 
-    return activity_response.text
 
-
-def generate_image(
-    client: genai.Client,
+def _build_image_generation_prompt(
     data: GenerateRequest,
     activity: str,
     input_images: dict[str, Image.Image],
     art_style: str,
-) -> Image.Image:
-    """Generate a cartoon image of pets based on the weather forecast and activity using gemini."""
+    include_reference_images: bool,
+) -> str:
     pets_information = "\n".join(
         f"- {pet.name}, {pet.type}, {pet.description}" for pet in data.pets
     )
-    image_generation_prompt = textwrap.dedent(
+    reference_instructions = ""
+    if include_reference_images:
+        reference_instructions = textwrap.dedent(
+            f"""
+            You will be given {len(input_images)} input images with these names (in this order):
+            {", ".join(input_images.keys())}
+            """
+        )
+    else:
+        reference_instructions = (
+            "No direct reference images are attached for this request. "
+            "Use the pet descriptions as the source of truth for appearance."
+        )
+
+    return textwrap.dedent(
         f"""
         You are an AI artist creating daily weather illustrations featuring pets based on a weather forecast and an activity that will be given to you. Your task is to generate a vibrant and engaging illustration that captures the essence of the weather conditions and the pets' activity in a specific art style.
 
@@ -197,8 +253,7 @@ def generate_image(
         The art style should be:
         {art_style}
 
-        You will be given {len(input_images)} input images with these names (in this order):
-        {", ".join(input_images.keys())}
+        {reference_instructions}
 
         ***********************************************
 
@@ -221,32 +276,148 @@ def generate_image(
         - The weather is important, so include elements that clearly indicate the weather conditions
         - Do not place the temperature box too close to the edge, or overlapping any important details.
         - Style the temperature box to fit the overall image and art style.
-        - Use the input images as references for the pets' appearances.
         - Style the pets to fit the activity and weather conditions.
         """,
     )
 
-    response = client.models.generate_content(
-        model="gemini-3-pro-image-preview",
-        contents=[image_generation_prompt, *input_images.values()],
-        config=types.GenerateContentConfig(
-            response_modalities=["IMAGE"],
-            image_config=types.ImageConfig(
-                aspect_ratio=data.image_gen_aspect_ratio,
-                image_size=data.image_gen_resolution,
-            ),
-        ),
+
+def generate_image(
+    provider: str,
+    client: genai.Client | None,
+    data: GenerateRequest,
+    activity: str,
+    input_images: dict[str, Image.Image],
+    art_style: str,
+) -> Image.Image:
+    """Generate a cartoon image of pets based on forecast and activity."""
+    include_reference_images = provider == "gemini"
+    image_generation_prompt = _build_image_generation_prompt(
+        data,
+        activity,
+        input_images,
+        art_style,
+        include_reference_images,
     )
 
-    if not response.parts:
-        msg = "Gemini returned no image."
+    if provider == "gemini":
+        if client is None:
+            msg = "Gemini client is required for provider=gemini"
+            raise RuntimeError(msg)
+
+        response = client.models.generate_content(
+            model="gemini-3-pro-image-preview",
+            contents=[image_generation_prompt, *input_images.values()],
+            config=types.GenerateContentConfig(
+                response_modalities=["IMAGE"],
+                image_config=types.ImageConfig(
+                    aspect_ratio=data.image_gen_aspect_ratio,
+                    image_size=data.image_gen_resolution,
+                ),
+            ),
+        )
+
+        if not response.parts:
+            msg = "Gemini returned no image."
+            raise RuntimeError(msg)
+
+        for part in response.parts:
+            img = part.as_image()
+            if img and img.image_bytes:
+                img_pil = Image.open(io.BytesIO(img.image_bytes))
+                return img_pil.copy()
+
+        msg = "No image part in response."
         raise RuntimeError(msg)
 
-    for part in response.parts:
-        img = part.as_image()
-        if img and img.image_bytes:
-            img_pil = Image.open(io.BytesIO(img.image_bytes))
-            return img_pil.copy()
+    response = _openrouter_post(
+        "/images/generations",
+        {
+            "model": data.openrouter_image_model,
+            "prompt": image_generation_prompt,
+            "size": _openrouter_image_size(
+                data.image_gen_aspect_ratio,
+                data.image_gen_resolution,
+            ),
+            "response_format": "b64_json",
+            "n": 1,
+        },
+        data.openrouter_api_key,
+    )
 
-    msg = "No image part in response."
+    image_data = response.get("data", [])
+    if not image_data:
+        msg = "OpenRouter returned no image data."
+        raise RuntimeError(msg)
+
+    first = image_data[0]
+    if first.get("b64_json"):
+        image_bytes = base64.b64decode(first["b64_json"])
+        img_pil = Image.open(io.BytesIO(image_bytes))
+        return img_pil.copy()
+
+    if first.get("url"):
+        with urllib.request.urlopen(first["url"], timeout=60) as image_response:
+            image_bytes = image_response.read()
+        img_pil = Image.open(io.BytesIO(image_bytes))
+        return img_pil.copy()
+
+    msg = "OpenRouter image response had neither b64_json nor url."
     raise RuntimeError(msg)
+
+
+def _openrouter_post(path: str, payload: dict, api_key: str | None) -> dict:
+    if not api_key:
+        msg = "OpenRouter API key is required."
+        raise RuntimeError(msg)
+
+    request = urllib.request.Request(
+        f"{_OPENROUTER_API_BASE}{path}",
+        data=json.dumps(payload).encode("utf-8"),
+        headers={
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+        },
+        method="POST",
+    )
+
+    try:
+        with urllib.request.urlopen(request, timeout=120) as response:
+            return json.loads(response.read().decode("utf-8"))
+    except urllib.error.HTTPError as exc:
+        detail = exc.read().decode("utf-8", errors="replace")
+        msg = f"OpenRouter request failed ({exc.code}): {detail}"
+        raise RuntimeError(msg) from exc
+
+
+def _extract_openrouter_text(content: object) -> str:
+    if isinstance(content, str):
+        return content.strip()
+    if isinstance(content, list):
+        parts: list[str] = []
+        for item in content:
+            if isinstance(item, dict) and item.get("type") == "text":
+                text = item.get("text")
+                if isinstance(text, str):
+                    parts.append(text)
+        return "\n".join(parts).strip()
+    return ""
+
+
+def _openrouter_image_size(aspect_ratio: str, resolution: str) -> str:
+    base = {"1K": 1024, "2K": 1536}.get(resolution, 1024)
+    try:
+        width_ratio, height_ratio = aspect_ratio.split(":", maxsplit=1)
+        ratio = float(width_ratio) / float(height_ratio)
+        if ratio >= 1:
+            width = base
+            height = max(256, int(base / ratio))
+        else:
+            height = base
+            width = max(256, int(base * ratio))
+        # keep common model-friendly dimensions
+        width = max(256, (width // 64) * 64)
+        height = max(256, (height // 64) * 64)
+        return f"{width}x{height}"
+    except (ValueError, ZeroDivisionError):
+        _LOGGER.warning(f"Could not parse aspect ratio {aspect_ratio}, using 1024x1024")
+        return "1024x1024"

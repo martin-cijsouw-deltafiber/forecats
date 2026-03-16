@@ -35,7 +35,9 @@ Works in better weather
   - [File editor add-on](https://www.home-assistant.io/common-tasks/os/#installing-and-using-the-file-editor-add-on)
   - [Terminal and ssh add-on](https://www.home-assistant.io/common-tasks/os/#installing-and-using-the-ssh-add-on)
   - [Meteorologisk institutt (Met.no)](https://www.home-assistant.io/integrations/met/) integration
-- A google AI studio [API key](https://aistudio.google.com/api-keys). Note that, as of writing, you need to input billing details to get the free credits.
+- Either:
+  - A Google AI Studio [API key](https://aistudio.google.com/api-keys), or
+  - An [OpenRouter API key](https://openrouter.ai/keys) plus OpenRouter text/image model IDs.
 
 ### Setup
 *Do the following in your HA server, using the Terminal & SSH addon, or `docker exec` if you are running a container on a host system*
@@ -99,7 +101,9 @@ I got annoyed testing out new prompts on HA, so I made a folder to experiment lo
   git clone https://github.com/jwardbond/forecats.git && cd forecats/local_testing
   ```
 1. Add your cat images to the `forecats_data/input_images` folder.
-2. Create a `.env` file with your Gemini API key.
+2. Create a `.env` file:
+   - Gemini: set `GEN_PROVIDER=gemini` and `GEMINI_API_KEY`.
+   - OpenRouter: set `GEN_PROVIDER=openrouter`, `OPENROUTER_API_KEY`, `OPENROUTER_TEXT_MODEL`, and `OPENROUTER_IMAGE_MODEL`.
 3. Copy the data from your automation into `test.py`.
 4. Run:
   ```bash

@@ -24,7 +24,20 @@ input_image_paths = [
 ]
 
 data = GenerateRequest(
+    provider=os.getenv("GEN_PROVIDER")
+    or (
+        "openrouter"
+        if (
+            os.getenv("OPENROUTER_API_KEY")
+            and os.getenv("OPENROUTER_TEXT_MODEL")
+            and os.getenv("OPENROUTER_IMAGE_MODEL")
+        )
+        else "gemini"
+    ),
     gemini_api_key=os.getenv("GEMINI_API_KEY"),
+    openrouter_api_key=os.getenv("OPENROUTER_API_KEY"),
+    openrouter_text_model=os.getenv("OPENROUTER_TEXT_MODEL"),
+    openrouter_image_model=os.getenv("OPENROUTER_IMAGE_MODEL"),
     location="Toronto, Ontario, Canada",
     forecast={"datetime": "2025-6-07", "temperature": -10, "templow": -15, "condition": "sunny"},
     temperature_unit="C",

@@ -10,7 +10,11 @@ class Pet(BaseModel):
 class GenerateRequest(BaseModel):
     """Request model for generating pet pictures."""
 
-    gemini_api_key: str
+    provider: str = "gemini"
+    gemini_api_key: str | None = None
+    openrouter_api_key: str | None = None
+    openrouter_text_model: str | None = None
+    openrouter_image_model: str | None = None
 
     location: str
     forecast: dict
