@@ -3,12 +3,13 @@ import os
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+repo_root = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(repo_root / "custom_components"))
 
 from dotenv import load_dotenv
 
 from forecats import generate_pet_pic
-from models import GenerateRequest, Pet
+from forecats.models import GenerateRequest, Pet
 
 load_dotenv()  # Load environment variables from a .env file if present
 

@@ -39,7 +39,7 @@ Works in better weather
   - A Google AI Studio [API key](https://aistudio.google.com/api-keys), or
   - An [OpenRouter API key](https://openrouter.ai/keys) plus OpenRouter text/image model IDs.
 
-### Setup
+### Setup (HACS - recommended)
 *Do the following in your HA server, using the Terminal & SSH addon, or `docker exec` if you are running a container on a host system*
 
 1. **Create the necessary directory structure** in your Home Assistant server:
@@ -53,13 +53,13 @@ Works in better weather
   - Rename the files so the pets' names are in the filenames.
   - Upload them to `/config/forecats_data/input_images`.
 
-3. **Download the repo**
+3. **Install via HACS custom repository**
+  - Open HACS -> Integrations -> three-dot menu -> Custom repositories
+  - Repository: `https://github.com/jwardbond/forecats`
+  - Category: `Integration`
+  - Install **Forecats** from HACS
 
-  ```bash
-  cd /config/custom_components && git clone https://github.com/jwardbond/forecats.git
-  ```
-
-4. **Enable the custom integration** by adding `forecats:` to your configuration file:
+4. **Enable the integration** by adding `forecats:` to your configuration file:
 
   ```yaml
   # configuration.yaml
@@ -73,10 +73,18 @@ Works in better weather
   forecats:
   ```
 
-5. **Set up the automation** using the [automation template](https://github.com/jwardbond/forecats/blob/ha_integration/config_examples/automation_fragment.yaml) (add to `config/automations.yaml`).
+5. **Set up the automation** using the [automation template](https://github.com/jwardbond/forecats/blob/main/config_examples/automation_fragment.yaml) (add to `config/automations.yaml`).
   - Make sure to fill out (or remove) any `<>` in the template.
 
 6. **Restart your server**
+
+### Manual install (fallback)
+If you are not using HACS:
+
+```bash
+cd /config && git clone https://github.com/jwardbond/forecats.git
+cp -r /config/forecats/custom_components/forecats /config/custom_components/
+```
 
 **That's it!** Every morning at 5:00 am, the forecats integration will generate the following images in the `config/www/daily_forecats/` directory:
 - `forecats_original.png`: the unprocessed output image from Gemini
@@ -115,7 +123,7 @@ You will need a screen controllable with ESPHOME. I used seeed studio's [e10002 
 
 
 ## TODO
-- [ ] Enrol in HACS for easier install
+- [x] Enrol in HACS for easier install
 - [ ] Option to save images to dir
 - [ ] Make automation into blueprint for easier install
 - [ ] Separate e-ink instructions

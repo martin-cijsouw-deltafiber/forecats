@@ -22,7 +22,7 @@ Please try running it on an HA server before submitting the PR.
 
 ## Guidelines
 
-- If you change the automation template, make sure these changes are reflected in `models.py` and `local_testing/test.py` as well.
+- If you change the automation template, make sure these changes are reflected in `custom_components/forecats/models.py` and `local_testing/test.py` as well.
   
 ## Need Help?
 
