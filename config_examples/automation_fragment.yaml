@@ -50,4 +50,5 @@
         image_gen_resolution: "1K"
         final_image_size: "800x480" # Or whatever you want, as long as its <= image_gen_resolution
         display_profile: "spectra6" # Currently supports null (original image) or "spectra6"
+        # output_dir: "/config/www/my_forecats"  # Optional: custom image output directory (default: /config/www/daily_forecats/)
   mode: single

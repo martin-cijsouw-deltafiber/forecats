@@ -38,7 +38,7 @@ def generate_pet_pic(data: GenerateRequest, config_dir: str) -> tuple[str, str]:
     # Setup paths relative to HA config directory
     config_path = Path(config_dir)
     data_dir = config_path / "forecats_data"
-    static_dir = config_path / "www" / "daily_forecats"
+    static_dir = Path(data.output_dir) if data.output_dir else config_path / "www" / "daily_forecats"
 
     data_dir.mkdir(parents=True, exist_ok=True)
     static_dir.mkdir(parents=True, exist_ok=True)

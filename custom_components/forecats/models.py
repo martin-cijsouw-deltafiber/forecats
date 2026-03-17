@@ -31,4 +31,5 @@ class GenerateRequest(BaseModel):
     image_gen_resolution: str
     final_image_size: str
 
-    display_profile: Optional[str]
+    display_profile: Optional[str] = None
+    output_dir: Optional[str] = None

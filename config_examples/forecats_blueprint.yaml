@@ -1,0 +1,189 @@
+blueprint:
+  name: "Forecats - Daily Pet Weather Art"
+  description: >
+    Generate weather-themed AI art featuring your pets every morning using the
+    Forecats integration. After importing, edit the `pets`, `input_image_paths`,
+    and `art_styles` sections directly in the automation editor.
+  domain: automation
+  source_url: https://github.com/jwardbond/forecats/blob/main/config_examples/forecats_blueprint.yaml
+
+  input:
+    trigger_time:
+      name: "Generation Time"
+      description: "Time to run the daily image generation."
+      default: "05:00:00"
+      selector:
+        time: {}
+
+    weather_entity:
+      name: "Weather Entity"
+      description: "Your Home Assistant weather integration entity (e.g. weather.forecast_home)."
+      selector:
+        entity:
+          domain: weather
+
+    location:
+      name: "Location"
+      description: "Your city and region for weather context (e.g. 'Toronto, Ontario, Canada')."
+      selector:
+        text: {}
+
+    provider:
+      name: "AI Provider"
+      description: "Which AI provider to use for generation."
+      default: "gemini"
+      selector:
+        select:
+          options:
+            - "gemini"
+            - "openrouter"
+
+    gemini_api_key:
+      name: "Gemini API Key"
+      description: "Required when using the Gemini provider. Get one at https://aistudio.google.com/api-keys"
+      default: ""
+      selector:
+        text: {}
+
+    openrouter_api_key:
+      name: "OpenRouter API Key"
+      description: "Required when using the OpenRouter provider."
+      default: ""
+      selector:
+        text: {}
+
+    openrouter_text_model:
+      name: "OpenRouter Text Model ID"
+      description: "Required when using the OpenRouter provider (e.g. 'meta-llama/llama-3.1-8b-instruct')."
+      default: ""
+      selector:
+        text: {}
+
+    openrouter_image_model:
+      name: "OpenRouter Image Model ID"
+      description: "Required when using the OpenRouter provider (e.g. 'black-forest-labs/flux-1.1-pro')."
+      default: ""
+      selector:
+        text: {}
+
+    image_gen_aspect_ratio:
+      name: "Aspect Ratio"
+      description: "Aspect ratio for the generated image."
+      default: "16:9"
+      selector:
+        select:
+          options:
+            - "16:9"
+            - "1:1"
+            - "9:16"
+
+    image_gen_resolution:
+      name: "Generation Resolution"
+      description: "Resolution for the AI-generated image."
+      default: "1K"
+      selector:
+        select:
+          options:
+            - "1K"
+            - "2K"
+            - "4K"
+
+    final_image_size:
+      name: "Final Image Size"
+      description: "Output dimensions in WxH pixels. Must be <= generation resolution."
+      default: "800x480"
+      selector:
+        text: {}
+
+    display_profile:
+      name: "Display Profile"
+      description: >
+        Color optimization profile for your screen.
+        Use 'spectra6' for Spectra6 e-ink displays; leave blank for standard screens.
+      default: ""
+      selector:
+        text: {}
+
+    output_dir:
+      name: "Output Directory"
+      description: >
+        Optional path to save generated images. Defaults to
+        '<HA config>/www/daily_forecats/' when left blank.
+      default: ""
+      selector:
+        text: {}
+
+variables:
+  weather_entity: !input weather_entity
+  gemini_api_key: !input gemini_api_key
+  openrouter_api_key: !input openrouter_api_key
+  openrouter_text_model: !input openrouter_text_model
+  openrouter_image_model: !input openrouter_image_model
+  display_profile: !input display_profile
+  output_dir: !input output_dir
+
+triggers:
+  - trigger: time
+    at: !input trigger_time
+
+conditions: []
+
+actions:
+  - action: weather.get_forecasts
+    metadata: {}
+    data:
+      type: daily
+    target:
+      entity_id: !input weather_entity
+    response_variable: todays_forecast
+
+  - action: forecats.generate_pet_picture
+    data:
+      provider: !input provider
+      location: !input location
+      forecast: "{{ todays_forecast[weather_entity].forecast[0] }}"
+      temperature_unit: "{{ state_attr(weather_entity, 'temperature_unit') }}"
+      image_gen_aspect_ratio: !input image_gen_aspect_ratio
+      image_gen_resolution: !input image_gen_resolution
+      final_image_size: !input final_image_size
+
+      # API keys — empty string is falsy in Python, so validation in the integration handles missing keys correctly
+      gemini_api_key: "{{ gemini_api_key }}"
+      openrouter_api_key: "{{ openrouter_api_key }}"
+      openrouter_text_model: "{{ openrouter_text_model }}"
+      openrouter_image_model: "{{ openrouter_image_model }}"
+
+      # Optional overrides — empty string is falsy; integration uses defaults when blank
+      display_profile: "{{ display_profile }}"
+      output_dir: "{{ output_dir }}"
+
+      # ── EDIT THESE SECTIONS AFTER IMPORTING ──────────────────────────────────
+      #
+      # Pets: add one entry per pet
+      pets:
+        - name: "<PET 1 NAME>"
+          type: "<cat|dog|...>"
+          description: >
+            <Describe appearance, personality, favourite things>
+        # - name: "<PET 2 NAME>"
+        #   type: "<cat|dog|...>"
+        #   description: >
+        #     <Describe appearance, personality, favourite things>
+
+      # Image paths: add one per reference photo (up to 14)
+      input_image_paths:
+        - "/config/forecats_data/input_images/<PET1>.jpg"
+        # - "/config/forecats_data/input_images/<PET1_and_PET2>.jpg"
+        # - "/config/forecats_data/input_images/<PET2>.jpg"
+
+      # Art styles: one will be picked at random each day
+      art_styles:
+        - "comic book"
+        - "anime"
+        - "pixar"
+        - "watercolor"
+        - "ghibli"
+        - "disney"
+      # ─────────────────────────────────────────────────────────────────────────
+
+mode: single

@@ -92,8 +92,17 @@ generate_pet_picture:
         text:
     display_profile:
       description: Display profile (null or "spectra6")
-      required: true
+      required: false
       default: null
       example: "spectra6"
+      selector:
+        text:
+    output_dir:
+      description: >
+        Optional path to save generated images. When set, images are saved to this directory
+        instead of the default "<HA config>/www/daily_forecats/". The directory is created
+        if it does not exist.
+      required: false
+      example: "/config/www/my_forecats"
       selector:
         text:
