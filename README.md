@@ -59,25 +59,29 @@ Works in better weather
   - Category: `Integration`
   - Install **Forecats** from HACS
 
-4. **Enable the integration** by adding `forecats:` to your configuration file:
-
-  ```yaml
-  # configuration.yaml
-
-  default_config:
-
-  # ...existing data
-
-  automation: !include automations.yaml
-
-  forecats:
-  ```
+4. **Add the integration via the UI**
+  - Go to **Settings → Integrations → Add Integration → Daily Forecats**
+  - Select your AI provider (Gemini or OpenRouter)
+  - Enter your API key (and model IDs if using OpenRouter)
+  - You only need to do this once; credentials are stored securely in the integration
 
 5. **Set up the automation** — choose one option:
    - **Blueprint (recommended):** Import [`config_examples/forecats_blueprint.yaml`](https://github.com/jwardbond/forecats/blob/main/config_examples/forecats_blueprint.yaml) via **Settings → Automations & Scenes → Blueprints → Import Blueprint**. Fill in the form inputs, then edit the `pets`, `input_image_paths`, and `art_styles` sections directly in the automation editor.
    - **Manual template:** Copy [`config_examples/automation_fragment.yaml`](https://github.com/jwardbond/forecats/blob/main/config_examples/automation_fragment.yaml) into `config/automations.yaml` and fill out all `<>` placeholders.
 
 6. **Restart your server**
+
+> [!Note]
+> To update credentials later, go to **Settings → Integrations → Daily Forecats → Configure**.
+
+### Migrating from an older version (YAML config)
+
+If you set up Forecats before v1.1.0, follow these steps:
+
+1. **Remove** the `forecats:` line from `configuration.yaml`
+2. **Add the integration via the UI** (see step 4 above) and enter your credentials
+3. **Remove** `provider`, `gemini_api_key`, `openrouter_api_key`, `openrouter_text_model`, and `openrouter_image_model` from all automation `data:` blocks — these are now handled by the integration
+4. **Restart** Home Assistant
 
 ### Manual install (fallback)
 If you are not using HACS:
@@ -127,5 +131,5 @@ You will need a screen controllable with ESPHOME. I used seeed studio's [e10002 
 - [x] Enrol in HACS for easier install
 - [x] Option to save images to dir
 - [x] Make automation into blueprint for easier install
-- [ ] See if I can make it more configurable from GUI
+- [x] See if I can make it more configurable from GUI
 - [ ] Support for multiple cities

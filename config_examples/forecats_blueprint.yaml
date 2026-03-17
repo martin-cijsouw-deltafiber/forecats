@@ -2,8 +2,10 @@ blueprint:
   name: "Forecats - Daily Pet Weather Art"
   description: >
     Generate weather-themed AI art featuring your pets every morning using the
-    Forecats integration. After importing, edit the `pets`, `input_image_paths`,
-    and `art_styles` sections directly in the automation editor.
+    Forecats integration. Credentials (API key, provider, models) are configured
+    once via Settings → Integrations → Daily Forecats — no need to enter them here.
+    After importing, edit the `pets`, `input_image_paths`, and `art_styles`
+    sections directly in the automation editor.
   domain: automation
   source_url: https://github.com/jwardbond/forecats/blob/main/config_examples/forecats_blueprint.yaml
 
@@ -25,44 +27,6 @@ blueprint:
     location:
       name: "Location"
       description: "Your city and region for weather context (e.g. 'Toronto, Ontario, Canada')."
-      selector:
-        text: {}
-
-    provider:
-      name: "AI Provider"
-      description: "Which AI provider to use for generation."
-      default: "gemini"
-      selector:
-        select:
-          options:
-            - "gemini"
-            - "openrouter"
-
-    gemini_api_key:
-      name: "Gemini API Key"
-      description: "Required when using the Gemini provider. Get one at https://aistudio.google.com/api-keys"
-      default: ""
-      selector:
-        text: {}
-
-    openrouter_api_key:
-      name: "OpenRouter API Key"
-      description: "Required when using the OpenRouter provider."
-      default: ""
-      selector:
-        text: {}
-
-    openrouter_text_model:
-      name: "OpenRouter Text Model ID"
-      description: "Required when using the OpenRouter provider (e.g. 'meta-llama/llama-3.1-8b-instruct')."
-      default: ""
-      selector:
-        text: {}
-
-    openrouter_image_model:
-      name: "OpenRouter Image Model ID"
-      description: "Required when using the OpenRouter provider (e.g. 'black-forest-labs/flux-1.1-pro')."
-      default: ""
       selector:
         text: {}
 
@@ -115,10 +79,6 @@ blueprint:
 
 variables:
   weather_entity: !input weather_entity
-  gemini_api_key: !input gemini_api_key
-  openrouter_api_key: !input openrouter_api_key
-  openrouter_text_model: !input openrouter_text_model
-  openrouter_image_model: !input openrouter_image_model
   display_profile: !input display_profile
   output_dir: !input output_dir
 
@@ -139,19 +99,12 @@ actions:
 
   - action: forecats.generate_pet_picture
     data:
-      provider: !input provider
       location: !input location
       forecast: "{{ todays_forecast[weather_entity].forecast[0] }}"
       temperature_unit: "{{ state_attr(weather_entity, 'temperature_unit') }}"
       image_gen_aspect_ratio: !input image_gen_aspect_ratio
       image_gen_resolution: !input image_gen_resolution
       final_image_size: !input final_image_size
-
-      # API keys — empty string is falsy in Python, so validation in the integration handles missing keys correctly
-      gemini_api_key: "{{ gemini_api_key }}"
-      openrouter_api_key: "{{ openrouter_api_key }}"
-      openrouter_text_model: "{{ openrouter_text_model }}"
-      openrouter_image_model: "{{ openrouter_image_model }}"
 
       # Optional overrides — empty string is falsy; integration uses defaults when blank
       display_profile: "{{ display_profile }}"

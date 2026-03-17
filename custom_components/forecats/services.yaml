@@ -1,36 +1,9 @@
 generate_pet_picture:
   name: Generate Pet Picture
-  description: Generate a weather-themed pet picture
+  description: >
+    Generate a weather-themed pet picture. Provider credentials are configured
+    via Settings → Integrations → Daily Forecats.
   fields:
-    provider:
-      description: Generation provider ("gemini" or "openrouter")
-      required: false
-      default: "gemini"
-      selector:
-        select:
-          options:
-            - "gemini"
-            - "openrouter"
-    gemini_api_key:
-      description: Gemini API key (required when provider is "gemini")
-      required: false
-      selector:
-        text:
-    openrouter_api_key:
-      description: OpenRouter API key (required when provider is "openrouter")
-      required: false
-      selector:
-        text:
-    openrouter_text_model:
-      description: OpenRouter text model ID for activity generation
-      required: false
-      selector:
-        text:
-    openrouter_image_model:
-      description: OpenRouter image model ID for image generation
-      required: false
-      selector:
-        text:
     location:
       description: Location for weather context
       example: "Toronto, Ontario, Canada"

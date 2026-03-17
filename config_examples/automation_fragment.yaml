@@ -15,11 +15,7 @@
       response_variable: todays_forecast
     - action: forecats.generate_pet_picture
       data:
-        provider: "gemini" # "gemini" or "openrouter"
-        gemini_api_key: "<YOUR GEMINI API KEY>" # required if provider is gemini
-        openrouter_api_key: "<YOUR OPENROUTER API KEY>" # required if provider is openrouter
-        openrouter_text_model: "<TEXT MODEL ID>" # required if provider is openrouter
-        openrouter_image_model: "<IMAGE MODEL ID>" # required if provider is openrouter
+        # Provider and API keys are configured via Settings → Integrations → Daily Forecats
         location: "<YOUR LOCATION>"
         forecast: "{{ todays_forecast['weather.forecast_home'].forecast[0] }}"
         temperature_unit: "{{ state_attr('weather.forecast_home', 'temperature_unit') }}"

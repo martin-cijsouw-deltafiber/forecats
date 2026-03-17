@@ -1,0 +1,52 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Daily Forecats",
+        "description": "Select your AI provider",
+        "data": {
+          "provider": "Provider"
+        }
+      },
+      "gemini": {
+        "title": "Gemini Configuration",
+        "data": {
+          "gemini_api_key": "Gemini API Key"
+        }
+      },
+      "openrouter": {
+        "title": "OpenRouter Configuration",
+        "data": {
+          "openrouter_api_key": "OpenRouter API Key",
+          "openrouter_text_model": "Text Model (e.g. meta-llama/llama-3.3-70b-instruct)",
+          "openrouter_image_model": "Image Model (e.g. black-forest-labs/flux-schnell)"
+        }
+      }
+    },
+    "error": {
+      "empty_api_key": "API key cannot be empty",
+      "empty_model": "Model name cannot be empty"
+    },
+    "abort": {
+      "already_configured": "Daily Forecats is already configured"
+    }
+  },
+  "options": {
+    "step": {
+      "gemini": {
+        "title": "Update Gemini Configuration",
+        "data": {
+          "gemini_api_key": "Gemini API Key"
+        }
+      },
+      "openrouter": {
+        "title": "Update OpenRouter Configuration",
+        "data": {
+          "openrouter_api_key": "OpenRouter API Key",
+          "openrouter_text_model": "Text Model",
+          "openrouter_image_model": "Image Model"
+        }
+      }
+    }
+  }
+}

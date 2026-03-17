@@ -2,7 +2,7 @@
   "domain": "forecats",
   "name": "Daily Forecats",
   "codeowners": ["@jwardbond"],
-  "config_flow": false,
+  "config_flow": true,
   "documentation": "https://github.com/jwardbond/forecats",
   "iot_class": "local_polling",
   "issue_tracker": "https://github.com/jwardbond/forecats/issues",
