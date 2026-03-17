@@ -11,6 +11,7 @@ from .forecats import generate_pet_pic
 from .models import GenerateRequest
 
 _LOGGER = logging.getLogger(__name__)
+_LOGGER.warning("forecats: __init__.py module imported — integration is loading")
 
 PET_SCHEMA = vol.Schema(
     {
@@ -40,6 +41,7 @@ SERVICE_SCHEMA = vol.Schema(
 
 async def async_setup(hass: HomeAssistant, config: dict) -> bool:
     """Stub for legacy YAML config — now handled via config entry."""
+    _LOGGER.info("forecats: async_setup called (YAML path)")
     if DOMAIN in config:
         _LOGGER.warning(
             "Configuring forecats via configuration.yaml is deprecated. "
@@ -51,6 +53,7 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Daily Forecats from a config entry."""
+    _LOGGER.info("forecats: async_setup_entry called — entry_id=%s", entry.entry_id)
     hass.data.setdefault(DOMAIN, {})
     # Merge options over data so credentials updated via "Configure" take effect
     # without requiring a full restart.

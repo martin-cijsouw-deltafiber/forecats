@@ -11,6 +11,7 @@ from homeassistant.core import callback
 from .const import DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
+_LOGGER.warning("forecats: config_flow.py module imported — config flow handler is registering")
 
 PROVIDERS = ["gemini", "openrouter"]
 
@@ -27,6 +28,7 @@ class ForecastsConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self, user_input: dict[str, Any] | None = None
     ) -> config_entries.FlowResult:
         """Step 1: select provider."""
+        _LOGGER.info("forecats: async_step_user called — config flow is reachable")
         await self.async_set_unique_id(DOMAIN)
         self._abort_if_unique_id_configured()
 
