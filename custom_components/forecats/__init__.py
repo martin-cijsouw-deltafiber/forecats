@@ -1,47 +1,16 @@
 import logging
 
-import homeassistant.helpers.config_validation as cv
-import voluptuous as vol
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, ServiceCall
 from homeassistant.exceptions import HomeAssistantError
 
 from .const import DOMAIN
-from .forecats import generate_pet_pic
-from .models import GenerateRequest
 
 _LOGGER = logging.getLogger(__name__)
-_LOGGER.warning("forecats: __init__.py module imported — integration is loading")
-
-PET_SCHEMA = vol.Schema(
-    {
-        vol.Required("name"): cv.string,
-        vol.Required("description"): cv.string,
-        vol.Required("type", default="cat"): cv.string,
-    }
-)
-
-# Service schema — provider / API key fields removed; they come from the config entry.
-SERVICE_SCHEMA = vol.Schema(
-    {
-        vol.Required("location"): cv.string,
-        vol.Required("forecast"): dict,
-        vol.Required("temperature_unit"): cv.string,
-        vol.Required("pets"): list[PET_SCHEMA],
-        vol.Required("input_image_paths"): [cv.string],
-        vol.Required("art_styles"): [cv.string],
-        vol.Required("image_gen_aspect_ratio"): cv.string,
-        vol.Required("image_gen_resolution"): cv.string,
-        vol.Required("final_image_size"): cv.string,
-        vol.Optional("display_profile"): cv.string,
-        vol.Optional("output_dir"): cv.string,
-    },
-)
 
 
 async def async_setup(hass: HomeAssistant, config: dict) -> bool:
     """Stub for legacy YAML config — now handled via config entry."""
-    _LOGGER.info("forecats: async_setup called (YAML path)")
     if DOMAIN in config:
         _LOGGER.warning(
             "Configuring forecats via configuration.yaml is deprecated. "
@@ -53,11 +22,41 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Daily Forecats from a config entry."""
+    import homeassistant.helpers.config_validation as cv
+    import voluptuous as vol
+
+    from .forecats import generate_pet_pic
+    from .models import GenerateRequest
+
     _LOGGER.info("forecats: async_setup_entry called — entry_id=%s", entry.entry_id)
     hass.data.setdefault(DOMAIN, {})
     # Merge options over data so credentials updated via "Configure" take effect
     # without requiring a full restart.
     hass.data[DOMAIN]["entry_data"] = {**entry.data, **entry.options}
+
+    pet_schema = vol.Schema(
+        {
+            vol.Required("name"): cv.string,
+            vol.Required("description"): cv.string,
+            vol.Required("type", default="cat"): cv.string,
+        }
+    )
+
+    service_schema = vol.Schema(
+        {
+            vol.Required("location"): cv.string,
+            vol.Required("forecast"): dict,
+            vol.Required("temperature_unit"): cv.string,
+            vol.Required("pets"): [pet_schema],
+            vol.Required("input_image_paths"): [cv.string],
+            vol.Required("art_styles"): [cv.string],
+            vol.Required("image_gen_aspect_ratio"): cv.string,
+            vol.Required("image_gen_resolution"): cv.string,
+            vol.Required("final_image_size"): cv.string,
+            vol.Optional("display_profile"): cv.string,
+            vol.Optional("output_dir"): cv.string,
+        },
+    )
 
     def _validate_provider_fields(merged: dict) -> None:
         provider = (merged.get("provider") or "gemini").lower()
@@ -111,7 +110,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         _LOGGER.info("Generated pet pictures: %s, %s", original_path, optimized_path)
 
     hass.services.async_register(
-        DOMAIN, "generate_pet_picture", handle_generate, SERVICE_SCHEMA
+        DOMAIN, "generate_pet_picture", handle_generate, service_schema
     )
 
     # Reload this entry whenever the user saves new options so credentials
