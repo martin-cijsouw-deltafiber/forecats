@@ -1,4 +1,4 @@
-"""Config flow for Daily Forecats."""
+"""Config flow for Forecats."""
 from __future__ import annotations
 
 import logging
@@ -16,7 +16,7 @@ PROVIDERS = ["gemini", "openrouter"]
 
 
 class ForecastsConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
-    """Handle a config flow for Daily Forecats."""
+    """Handle a config flow for Forecats."""
 
     VERSION = 1
 
@@ -56,7 +56,7 @@ class ForecastsConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 errors["gemini_api_key"] = "empty_api_key"
             else:
                 return self.async_create_entry(
-                    title="Daily Forecats",
+                    title="Forecats",
                     data={
                         "provider": "gemini",
                         "gemini_api_key": user_input["gemini_api_key"].strip(),
@@ -88,7 +88,7 @@ class ForecastsConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 errors["openrouter_image_model"] = "empty_model"
             else:
                 return self.async_create_entry(
-                    title="Daily Forecats",
+                    title="Forecats",
                     data={
                         "provider": "openrouter",
                         "openrouter_api_key": user_input["openrouter_api_key"].strip(),
@@ -123,7 +123,7 @@ class ForecastsConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
 
 class OptionsFlowHandler(config_entries.OptionsFlow):
-    """Handle options flow for Daily Forecats (edit credentials)."""
+    """Handle options flow for Forecats (edit credentials)."""
 
     def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
         self._config_entry = config_entry

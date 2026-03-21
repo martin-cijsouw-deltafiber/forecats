@@ -1,9 +1,9 @@
 {
-  "title": "Daily Forecats",
+  "title": "Forecats",
   "config": {
     "step": {
       "user": {
-        "title": "Daily Forecats",
+        "title": "Forecats",
         "description": "Select your AI provider",
         "data": {
           "provider": "Provider"
@@ -29,7 +29,7 @@
       "empty_model": "Model name cannot be empty"
     },
     "abort": {
-      "already_configured": "Daily Forecats is already configured"
+      "already_configured": "Forecats is already configured"
     }
   },
   "options": {

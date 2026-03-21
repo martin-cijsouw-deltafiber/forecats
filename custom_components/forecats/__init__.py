@@ -15,13 +15,13 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
         _LOGGER.warning(
             "Configuring forecats via configuration.yaml is deprecated. "
             "Please remove the 'forecats:' entry and configure the integration "
-            "through Settings → Integrations → Add → Daily Forecats."
+            "through Settings → Integrations → Add → Forecats."
         )
     return True
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Set up Daily Forecats from a config entry."""
+    """Set up Forecats from a config entry."""
     import homeassistant.helpers.config_validation as cv
     import voluptuous as vol
 

@@ -60,7 +60,7 @@ Works in better weather
   - Install **Forecats** from HACS
 
 4. **Add the integration via the UI**
-  - Go to **Settings → Integrations → Add Integration → Daily Forecats**
+  - Go to **Settings → Integrations → Add Integration → Forecats**
   - Select your AI provider (Gemini or OpenRouter)
   - Enter your API key (and model IDs if using OpenRouter)
   - You only need to do this once; credentials are stored securely in the integration
@@ -72,7 +72,7 @@ Works in better weather
 6. **Restart your server**
 
 > [!Note]
-> To update credentials later, go to **Settings → Integrations → Daily Forecats → Configure**.
+> To update credentials later, go to **Settings → Integrations → Forecats → Configure**.
 
 ### Migrating from an older version (YAML config)
 

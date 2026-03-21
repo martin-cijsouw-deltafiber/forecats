@@ -3,7 +3,7 @@ blueprint:
   description: >
     Generate weather-themed AI art featuring your pets every morning using the
     Forecats integration. Credentials (API key, provider, models) are configured
-    once via Settings → Integrations → Daily Forecats — no need to enter them here.
+    once via Settings → Integrations → Forecats — no need to enter them here.
     After importing, edit the `pets`, `input_image_paths`, and `art_styles`
     sections directly in the automation editor.
   domain: automation

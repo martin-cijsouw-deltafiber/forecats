@@ -2,7 +2,7 @@ generate_pet_picture:
   name: Generate Pet Picture
   description: >
     Generate a weather-themed pet picture. Provider credentials are configured
-    via Settings → Integrations → Daily Forecats.
+    via Settings → Integrations → Forecats.
   fields:
     location:
       description: Location for weather context

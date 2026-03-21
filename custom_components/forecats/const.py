@@ -1,3 +1,3 @@
-"""Constants for the Daily Forecats integration."""
+"""Constants for the Forecats integration."""
 
 DOMAIN = "forecats"
