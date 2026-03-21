@@ -32,6 +32,8 @@ outputs/
 
 !static/*/*.png
 !static/*/*.jpg
+!icon.png
+!custom_components/forecats/icon.png
 forecats_prompt_history.txt
 
 
